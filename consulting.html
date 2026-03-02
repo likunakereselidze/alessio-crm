@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alessio Consulting CRM</title>
+<style>
+:root {
+  --d-color:#CC0000; --i-color:#E68A00; --s-color:#008000; --c-color:#0000CC;
+  --bg:#0f1117; --card-bg:#1a1d27; --card-hover:#22263a; --border:#2a2e3f;
+  --text:#e1e4ed; --text-muted:#8b90a0; --accent:#6c8aff; --accent-hover:#8ba3ff;
+  --success:#34d399; --warning:#fbbf24; --danger:#f87171; --purple:#a855f7;
+}
+body.light {
+  --bg:#f5f7fa; --card-bg:#ffffff; --card-hover:#f0f2f5; --border:#d1d5db;
+  --text:#1a1a2e; --text-muted:#6b7280; --accent:#4f6df5; --accent-hover:#3b5de7;
+  --success:#16a34a; --warning:#d97706; --danger:#dc2626; --purple:#9333ea;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;}
+
+/* Passcode */
+#passcode-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,var(--bg) 0%,var(--card-bg) 50%,var(--bg) 100%);}
+.passcode-box{text-align:center;padding:48px;border-radius:16px;background:var(--card-bg);border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+.passcode-box h1{font-size:24px;margin-bottom:8px;color:var(--purple);}
+.passcode-box p{color:var(--text-muted);margin-bottom:24px;font-size:14px;}
+.passcode-box input{padding:12px 20px;font-size:16px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);width:260px;text-align:center;outline:none;}
+.passcode-box input:focus{border-color:var(--purple);}
+.passcode-box button{display:block;margin:16px auto 0;padding:12px 40px;font-size:14px;font-weight:600;border-radius:8px;border:none;background:var(--purple);color:#fff;cursor:pointer;}
+.passcode-box button:hover{opacity:0.9;}
+.passcode-error{color:var(--danger);margin-top:12px;font-size:13px;display:none;}
+
+/* Top bar */
+#app{display:none;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--card-bg);position:sticky;top:0;z-index:100;}
+.top-bar h1{font-size:18px;}
+.top-bar h1 span{color:var(--purple);}
+.top-bar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.top-bar-actions button,.top-bar-actions label,.top-bar-actions a{padding:8px 14px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text-muted);cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;}
+.top-bar-actions button:hover,.top-bar-actions label:hover,.top-bar-actions a:hover{border-color:var(--accent);color:var(--text);}
+
+/* Stats */
+.stats-bar{display:flex;gap:12px;padding:16px 24px;flex-wrap:wrap;}
+.stat-card{padding:12px 20px;border-radius:10px;background:var(--card-bg);border:1px solid var(--border);min-width:120px;text-align:center;}
+.stat-card .num{font-size:24px;font-weight:700;}
+.stat-card .label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+
+/* Filters */
+.filters{display:flex;gap:8px;padding:0 24px 16px;flex-wrap:wrap;align-items:center;}
+.filter-btn{padding:6px 14px;font-size:12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .2s;}
+.filter-btn:hover{border-color:var(--accent);color:var(--text);}
+.filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.filter-btn.cat-un.active{background:#3b82f6;border-color:#3b82f6;}
+.filter-btn.cat-mdb.active{background:#8b5cf6;border-color:#8b5cf6;}
+.filter-btn.cat-eu.active{background:#06b6d4;border-color:#06b6d4;}
+.filter-btn.cat-firm.active{background:#f59e0b;border-color:#f59e0b;}
+.filter-btn.cat-platform.active{background:#10b981;border-color:#10b981;}
+.search-input{padding:6px 14px;font-size:12px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--text);outline:none;width:200px;}
+.search-input:focus{border-color:var(--accent);}
+
+/* Category badges */
+.cat-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px;}
+.cat-badge.un{background:#3b82f6;}
+.cat-badge.mdb{background:#8b5cf6;}
+.cat-badge.eu{background:#06b6d4;}
+.cat-badge.bilateral{background:#14b8a6;}
+.cat-badge.firm{background:#f59e0b;color:#000;}
+.cat-badge.platform{background:#10b981;}
+
+/* Reg status */
+.reg-select{padding:4px 8px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;outline:none;width:140px;}
+.reg-select.not-registered{border-color:var(--border);}
+.reg-select.profile-created{border-color:var(--warning);color:var(--warning);}
+.reg-select.application-sent{border-color:var(--accent);color:var(--accent);}
+.reg-select.registered{border-color:var(--success);color:var(--success);}
+.reg-select.shortlisted{border-color:var(--purple);color:var(--purple);}
+.reg-select.active-engagement{border-color:#34d399;color:#34d399;}
+
+/* Column header */
+.col-header{display:grid;grid-template-columns:40px 1fr 150px 90px 80px 140px 40px;padding:8px 0;gap:8px;margin:0 24px;border-bottom:2px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);font-weight:600;}
+
+/* Contact cards */
+.contact-card{margin:0 24px;border-bottom:1px solid var(--border);transition:background .15s;}
+.contact-card:hover{background:var(--card-hover);}
+.contact-main{display:grid;grid-template-columns:40px 1fr 150px 90px 80px 140px 40px;align-items:center;padding:12px 0;gap:8px;cursor:pointer;}
+.priority-badge{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--border);color:var(--text-muted);}
+.priority-badge.top{background:var(--purple);color:#fff;}
+.contact-info h3{font-size:13px;font-weight:600;}
+.contact-info p{font-size:11px;color:var(--text-muted);}
+.company-col{font-size:12px;color:var(--text-muted);}
+.location-col{font-size:11px;color:var(--text-muted);}
+.expand-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.expand-btn:hover{border-color:var(--accent);color:var(--accent);}
+.expand-btn.open{transform:rotate(180deg);}
+
+/* Expanded */
+.contact-expanded{display:none;padding:0 0 16px 48px;}
+.contact-expanded.open{display:block;}
+.expanded-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.expanded-section{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.expanded-section h4{font-size:11px;text-transform:uppercase;color:var(--text-muted);letter-spacing:.5px;margin-bottom:8px;}
+.expanded-section textarea{width:100%;min-height:180px;padding:10px;font-size:12px;line-height:1.6;border-radius:6px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);resize:vertical;outline:none;font-family:inherit;}
+.expanded-section textarea:focus{border-color:var(--accent);}
+.expanded-section .comm-tip{font-size:12px;color:var(--text-muted);line-height:1.5;padding:8px 0;}
+.expanded-section .comm-tip strong{color:var(--text);}
+.date-row{display:flex;gap:12px;align-items:center;margin-top:8px;}
+.date-row label{font-size:11px;color:var(--text-muted);}
+.date-row input{padding:4px 8px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);outline:none;}
+
+/* Save indicator */
+.save-indicator{position:fixed;bottom:20px;right:20px;padding:10px 20px;border-radius:8px;background:var(--success);color:#000;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:200;}
+.save-indicator.show{opacity:1;}
+
+/* Category group headers */
+.cat-group-header{padding:12px 24px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid var(--border);margin-top:8px;display:flex;align-items:center;gap:10px;}
+.cat-dot{width:12px;height:12px;border-radius:50%;display:inline-block;}
+
+/* Tooltips */
+[data-tooltip]{position:relative;cursor:help;}
+[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1d27;color:#e1e4ed;padding:8px 12px;border-radius:8px;font-size:11px;font-weight:400;line-height:1.4;white-space:normal;max-width:260px;width:max-content;text-align:left;pointer-events:none;opacity:0;transition:opacity .2s;z-index:500;box-shadow:0 4px 12px rgba(0,0,0,0.3);text-transform:none;letter-spacing:normal;}
+[data-tooltip]::before{content:'';position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1a1d27;pointer-events:none;opacity:0;transition:opacity .2s;z-index:501;}
+[data-tooltip]:hover::after,[data-tooltip]:hover::before{opacity:1;}
+body.light [data-tooltip]::after{background:#1e293b;color:#f1f5f9;}
+body.light [data-tooltip]::before{border-top-color:#1e293b;}
+[data-tooltip].tooltip-down::after{bottom:auto;top:calc(100% + 8px);}
+[data-tooltip].tooltip-down::before{bottom:auto;top:calc(100% + 2px);border-top-color:transparent;border-bottom-color:#1a1d27;}
+body.light [data-tooltip].tooltip-down::before{border-top-color:transparent;border-bottom-color:#1e293b;}
+.info-icon{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--border);color:var(--text-muted);font-size:9px;font-weight:700;font-style:italic;cursor:help;margin-left:4px;vertical-align:middle;}
+
+/* Guide */
+.guide-section{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+.guide-section h3{color:var(--purple);font-size:16px;margin-bottom:10px;}
+.guide-section p,.guide-section li{font-size:13px;line-height:1.7;color:var(--text);}
+.guide-section ul{margin:8px 0;padding-left:20px;}
+
+/* Donor table */
+.donor-table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card-bg);border-radius:12px;overflow:hidden;}
+.donor-table th{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--accent);text-align:left;background:var(--bg);}
+.donor-table td{padding:10px 16px;border-bottom:1px solid var(--border);}
+.donor-table a{color:var(--accent);text-decoration:none;}
+.donor-table a:hover{text-decoration:underline;}
+.donor-table tr.donor-row{cursor:pointer;transition:background .2s;}
+.donor-table tr.donor-row:hover{background:var(--card-hover);}
+.donor-table tr.donor-row td:first-child::before{content:'▸ ';color:var(--text-muted);font-size:11px;transition:transform .2s;}
+.donor-table tr.donor-row.open td:first-child::before{content:'▾ ';}
+.donor-table tr.donor-detail{display:none;}
+.donor-table tr.donor-detail.open{display:table-row;}
+.donor-table tr.donor-detail td{padding:14px 20px 14px 36px;background:var(--bg);border-bottom:1px solid var(--border);}
+.donor-brief{font-size:12px;line-height:1.7;color:var(--text-muted);}
+.donor-brief strong{color:var(--text);font-weight:600;}
+.donor-brief .brief-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-right:6px;margin-bottom:4px;}
+.donor-brief .tag-budget{background:rgba(52,211,153,0.15);color:var(--success);}
+.donor-brief .tag-hire{background:rgba(168,85,247,0.15);color:var(--purple);}
+.donor-brief .tag-focus{background:rgba(59,130,246,0.15);color:var(--accent);}
+
+/* Mobile */
+@media(max-width:768px){
+  .passcode-box{padding:32px 20px;margin:0 16px;}
+  .passcode-box input{width:100%;}
+  .top-bar{flex-direction:column;gap:12px;padding:12px 16px;}
+  .top-bar h1{font-size:15px;}
+  .top-bar-actions{flex-wrap:wrap;justify-content:center;gap:6px;}
+  .stats-bar{padding:12px 16px;gap:8px;}
+  .stat-card{min-width:0;flex:1;padding:10px 8px;}
+  .stat-card .num{font-size:20px;}
+  .filters{padding:0 16px 12px;gap:6px;overflow-x:auto;flex-wrap:nowrap;}
+  .col-header{display:none;}
+  .contact-card{margin:0 16px;}
+  .contact-main{display:flex;flex-direction:column;gap:6px;padding:14px 0;}
+  .contact-main::after{content:attr(data-mobile-info);font-size:10px;color:var(--text-muted);padding-top:4px;}
+  .expanded-grid{grid-template-columns:1fr;}
+  .contact-expanded{padding:0 0 16px 16px;}
+}
+</style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- PASSCODE -->
+<div id="passcode-screen">
+  <div class="passcode-box">
+    <h1>Alessio Consulting CRM</h1>
+    <p style="color:var(--purple);font-style:italic;margin-bottom:8px;">You have everything it takes to do something extraordinary.</p>
+    <p style="color:var(--text-muted);font-size:12px;margin-bottom:24px;">Built for you with love, by Lia</p>
+    <input type="password" id="passcode-input" placeholder="Enter passcode" autofocus>
+    <button onclick="checkPasscode()">Unlock</button>
+    <div class="passcode-error" id="passcode-error">Incorrect passcode. Try again.</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="top-bar">
+    <h1>Alessio <span>Consulting CRM</span> &mdash; Development &amp; Technical Advisory</h1>
+    <div class="top-bar-actions">
+      <button onclick="window.location.href='crm.html'" style="background:var(--purple);color:#fff;border-color:var(--purple);font-weight:600;" class="tooltip-down" data-tooltip="Switch to the Jobs CRM for pharma MSAT positions">Jobs CRM &rarr;</button>
+      <button onclick="exportData()" class="tooltip-down" data-tooltip="Download all consulting CRM data as JSON backup">Export</button>
+      <label for="import-file" class="tooltip-down" data-tooltip="Restore from a previously exported JSON file">Import</label>
+      <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="display:none;">
+      <button onclick="localStorage.removeItem('alessio_consult_auth');document.getElementById('passcode-screen').style.display='flex';document.getElementById('app').style.display='none';" class="tooltip-down" data-tooltip="Lock the CRM and return to passcode screen">Lock</button>
+      <button id="toggle-research-btn" onclick="toggleResearch()" style="background:#6366f1;color:#fff;border-color:#6366f1;font-weight:600;" class="tooltip-down" data-tooltip="Market research: fields, rates, how framework contracts work">Research</button>
+      <button id="toggle-donors-btn" onclick="toggleDonors()" style="background:#06b6d4;color:#fff;border-color:#06b6d4;font-weight:600;" class="tooltip-down" data-tooltip="Complete list of donor organizations with registration links">Donors</button>
+      <button id="toggle-cv-btn" onclick="toggleCV()" style="background:#10b981;color:#fff;border-color:#10b981;font-weight:600;" class="tooltip-down" data-tooltip="Consulting CV variants and EOI generator">CV</button>
+      <button id="toggle-guide-btn" onclick="toggleGuide()" style="background:#f59e0b;color:#000;border-color:#f59e0b;font-weight:600;" class="tooltip-down" data-tooltip="How to use this consulting CRM">Help</button>
+      <button id="theme-toggle" onclick="toggleTheme()" style="font-size:16px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;" class="tooltip-down" data-tooltip="Switch dark/light theme">&#9788;</button>
+    </div>
+  </div>
+
+  <!-- CRM VIEW -->
+  <div id="crm-view">
+    <div class="stats-bar" id="stats-bar"></div>
+    <div class="filters">
+      <button class="filter-btn cat-un" data-filter="cat-un" onclick="toggleFilter(this)">UN Agencies</button>
+      <button class="filter-btn cat-mdb" data-filter="cat-mdb" onclick="toggleFilter(this)">MDBs</button>
+      <button class="filter-btn cat-eu" data-filter="cat-eu" onclick="toggleFilter(this)">EU / Bilateral</button>
+      <button class="filter-btn cat-firm" data-filter="cat-firm" onclick="toggleFilter(this)">Consulting Firms</button>
+      <button class="filter-btn cat-platform" data-filter="cat-platform" onclick="toggleFilter(this)">Platforms</button>
+      <button class="filter-btn" data-filter="status-pending" onclick="toggleFilter(this)">Not Registered</button>
+      <input class="search-input" placeholder="Search org, name..." oninput="renderContacts()">
+    </div>
+    <div class="col-header">
+      <div data-tooltip="Priority ranking (1–10). #1 = register first, #10 = lowest urgency. Contacts without a number have no priority set yet."># <span class="info-icon">i</span></div>
+      <div>Organization / Contact</div>
+      <div>Company</div>
+      <div data-tooltip="UN, MDB, EU/Bilateral, Firm, Platform">Type <span class="info-icon">i</span></div>
+      <div>Location</div>
+      <div data-tooltip="Registration pipeline: Not Registered → Profile Created → Application Sent → Registered → Shortlisted → Active">Status <span class="info-icon">i</span></div>
+      <div></div>
+    </div>
+    <div id="contacts-container"></div>
+    <div class="save-indicator" id="save-indicator">Saved</div>
+  </div>
+
+  <!-- RESEARCH VIEW -->
+  <div id="research-view" style="display:none;padding:24px;max-width:1200px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="showCRM()" style="padding:8px 16px;border-radius:6px;border:2px solid var(--purple);background:var(--purple);color:#fff;cursor:pointer;font-weight:700;font-size:13px;">&larr; Back to CRM</button>
+        <h2 style="color:var(--purple);font-size:22px;margin:0;">Consulting Market Research</h2>
+      </div>
+      <button onclick="showCRM()" style="width:34px;height:34px;border-radius:50%;border:2px solid #ef4444;background:transparent;color:#ef4444;cursor:pointer;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;">&times;</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <h3 style="color:var(--purple);font-size:16px;margin-bottom:8px;">Global Development Aid</h3>
+        <div style="font-size:32px;font-weight:700;color:var(--success);">$223B</div>
+        <div style="color:var(--text-muted);font-size:12px;">ODA in 2024 &mdash; record high, growing trend</div>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <h3 style="color:var(--purple);font-size:16px;margin-bottom:8px;">EU External Action</h3>
+        <div style="font-size:32px;font-weight:700;color:var(--success);">&euro;680M</div>
+        <div style="color:var(--text-muted);font-size:12px;">SEA 2023 framework contracts (2024&ndash;2028)</div>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <h3 style="color:var(--purple);font-size:16px;margin-bottom:8px;">Italy Mattei Plan</h3>
+        <div style="font-size:32px;font-weight:700;color:var(--warning);">&euro;5.5B</div>
+        <div style="color:var(--text-muted);font-size:12px;">Italy&rsquo;s Africa development initiative (multi-year)</div>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <h3 style="color:var(--purple);font-size:16px;margin-bottom:8px;">GEF Chemicals &amp; Waste</h3>
+        <div style="font-size:32px;font-weight:700;color:var(--warning);">$27B+</div>
+        <div style="color:var(--text-muted);font-size:12px;">Total GEF financing over 30 years &mdash; POPs/PFAS growing</div>
+      </div>
+    </div>
+
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;">
+      <h3 style="color:var(--purple);margin-bottom:16px;">What is International Development Consulting?</h3>
+      <p style="line-height:1.7;font-size:14px;">Donor organizations (UN, World Bank, EU, bilateral agencies) fund technical assistance projects in developing countries. They hire <strong>individual consultants</strong> and <strong>consulting firms</strong> to deliver expertise. Projects cover industrial development, technology transfer, environmental compliance, manufacturing competitiveness, and more.</p>
+      <p style="line-height:1.7;font-size:14px;margin-top:12px;"><strong style="color:var(--success);">Why Alessio fits:</strong> Your unique combination of cross-continental technology transfer (Italy&harr;China), PFAS/chemical safety expertise (95% reduction), Lean Six Sigma, 5 languages, and deep manufacturing knowledge maps directly to high-demand development consulting fields.</p>
+    </div>
+
+    <h3 style="color:var(--purple);margin:24px 0 16px;">Alessio&rsquo;s Skills &rarr; Development Consulting Fields</h3>
+    <div style="overflow-x:auto;">
+    <table class="donor-table">
+      <thead><tr><th>Your Skill</th><th>Development Consulting Field</th><th>Key Donors</th><th>Demand</th></tr></thead>
+      <tbody>
+        <tr><td>Technology transfer (Italy&harr;China)</td><td><strong>Technology transfer to developing countries</strong></td><td>UNIDO, EU, GIZ, JICA</td><td style="color:var(--success);font-weight:700;">HIGH</td></tr>
+        <tr><td>Lean Six Sigma Black Belt</td><td><strong>Manufacturing competitiveness / SME productivity</strong></td><td>World Bank, IFC, EBRD, USAID</td><td style="color:var(--success);font-weight:700;">HIGH</td></tr>
+        <tr><td>PFAS emission reduction (95%)</td><td><strong>Industrial pollution / chemical safety (POPs)</strong></td><td>UNEP, GEF, Stockholm Convention</td><td style="color:var(--danger);font-weight:700;">CRITICAL</td></tr>
+        <tr><td>Process data analytics</td><td><strong>Industry 4.0 / digital transformation of manufacturing</strong></td><td>EU, World Bank, AIIB</td><td style="color:var(--success);font-weight:700;">HIGH</td></tr>
+        <tr><td>MSAT, scale-up, industrialization</td><td><strong>Industrial development / capacity building</strong></td><td>UNIDO, AfDB, ADB</td><td style="color:var(--success);font-weight:700;">HIGH</td></tr>
+        <tr><td>Environmental compliance (Seveso III)</td><td><strong>Clean production / environmental management</strong></td><td>UNIDO NCPCs, GEF, EBRD</td><td style="color:var(--warning);font-weight:700;">MEDIUM-HIGH</td></tr>
+        <tr><td>5 languages incl. Chinese</td><td><strong>Multi-stakeholder project management</strong></td><td>All donors &mdash; major differentiator</td><td style="color:var(--success);font-weight:700;">HIGH</td></tr>
+        <tr><td>GMP knowledge (building)</td><td><strong>Pharma GMP in developing countries</strong></td><td>WHO, UNIDO</td><td style="color:var(--warning);font-weight:700;">MEDIUM</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 style="color:var(--purple);margin:24px 0 16px;">Daily Rate Benchmarks</h3>
+    <div style="overflow-x:auto;">
+    <table class="donor-table">
+      <thead><tr><th>Donor / Client</th><th>Daily Rate (Alessio&rsquo;s level)</th><th>Per Diem (additional)</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td style="font-weight:600;">UN Agencies</td><td>USD 450&ndash;650/day</td><td>DSA by duty station</td><td>P-4 equivalent (11yr + MSc)</td></tr>
+        <tr><td style="font-weight:600;">World Bank / IFC</td><td>USD 450&ndash;700/day</td><td>Per diem by country</td><td>GH level (senior consultant)</td></tr>
+        <tr><td style="font-weight:600;">EU Framework Contracts</td><td>&euro;500&ndash;700/day</td><td>&euro;100&ndash;250/day DSA</td><td>Category II now; Cat I at 15yr</td></tr>
+        <tr><td style="font-weight:600;">EBRD</td><td>USD 500&ndash;750/day</td><td>Per diem by country</td><td>Senior technical expert</td></tr>
+        <tr><td style="font-weight:600;">GIZ / KfW</td><td>&euro;500&ndash;700/day</td><td>Per diem by country</td><td>German bilateral cooperation</td></tr>
+        <tr><td style="font-weight:600;">AICS (Italian Coop)</td><td>&euro;400&ndash;600/day</td><td>Per diem by country</td><td>Italian development cooperation</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p style="color:var(--text-muted);font-size:12px;margin-top:8px;"><strong>Annual earning potential:</strong> &euro;75,000&ndash;140,000 (150&ndash;200 billable days) + per diems + travel reimbursement.</p>
+
+    <h3 style="color:var(--purple);margin:24px 0 16px;">How Framework Contracts Work</h3>
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;">
+      <div style="display:grid;grid-template-columns:40px 1fr;gap:8px 16px;font-size:13px;">
+        <div style="color:var(--purple);font-weight:700;font-size:20px;text-align:center;">1</div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);">EU (DG INTPA) issues call for tenders divided into thematic &ldquo;Lots&rdquo;</div>
+        <div style="color:var(--purple);font-weight:700;font-size:20px;text-align:center;">2</div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);">Large consortia (NIRAS, Particip, Ecorys, etc.) bid and win Lot-specific framework contracts</div>
+        <div style="color:var(--purple);font-weight:700;font-size:20px;text-align:center;">3</div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);">When a project arises (e.g. &ldquo;Support clean production in Tunisia&rdquo;), EU sends Request for Services to the contractor</div>
+        <div style="color:var(--purple);font-weight:700;font-size:20px;text-align:center;">4</div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);">The framework contractor searches their <strong>expert database</strong> for matching profiles</div>
+        <div style="color:var(--purple);font-weight:700;font-size:20px;text-align:center;">5</div>
+        <div style="padding:8px 0;"><strong style="color:var(--success);">YOU register with these consortium firms</strong> to be in their expert databases. When selected, you sign a short-term subcontract (daily rate + per diem + travel).</div>
+      </div>
+    </div>
+
+    <h3 style="color:var(--purple);margin:24px 0 16px;">Your Key Differentiators</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <h4 style="color:var(--danger);margin-bottom:6px;">PFAS / POPs Expertise</h4>
+        <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">Extremely rare in development consulting. Stockholm Convention listed PFOA in 2019 and PFHxS in 2022, creating <strong style="color:var(--text);">massive demand</strong> for experts helping developing countries.</p>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <h4 style="color:var(--success);margin-bottom:6px;">5 Languages + Chinese</h4>
+        <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">Opens virtually all major donor markets. Chinese is especially rare and valuable for <strong style="color:var(--text);">UNIDO-China South-South cooperation</strong> and Belt &amp; Road consulting.</p>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <h4 style="color:var(--accent);margin-bottom:6px;">Italy&harr;China Tech Transfer</h4>
+        <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">Direct experience in exactly the type of work UNIDO promotes globally. <strong style="color:var(--text);">5 years of hands-on cross-continental technology transfer.</strong></p>
+      </div>
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:16px;">
+        <h4 style="color:var(--warning);margin-bottom:6px;">Italian Nationality + Mattei Plan</h4>
+        <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">Access to AICS-funded projects and Italy&rsquo;s &euro;5.5B Mattei Plan for Africa. <strong style="color:var(--text);">38 priority countries, industrial development is a key sector.</strong></p>
+      </div>
+    </div>
+
+    <h3 style="color:var(--purple);margin:24px 0 16px;">Registration Roadmap</h3>
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;">
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:8px 16px;font-size:13px;">
+        <div style="color:var(--purple);font-weight:600;padding:8px 0;border-bottom:1px solid var(--border);">Month 1&ndash;2</div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);">Register on UNGM, DevEx, DevelopmentAid. Create UNIDO consultant profile. Register on EBRD Expert Registry. Prepare Europass CV emphasizing tech transfer + PFAS + languages.</div>
+        <div style="color:var(--purple);font-weight:600;padding:8px 0;border-bottom:1px solid var(--border);">Month 2&ndash;4</div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);">Register with 5&ndash;10 EU framework consortium firms (NIRAS, GFA, Ecorys, Particip, NTU). Register on World Bank WBGeProcure + ADB CMS. Contact UNIDO ITPO Italy (Diana Battaggia).</div>
+        <div style="color:var(--purple);font-weight:600;padding:8px 0;border-bottom:1px solid var(--border);">Month 4&ndash;8</div>
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);">Apply to specific UNIDO, UNEP, WHO consultancies. Register with Italian firms (AIC Progetti, Agriconsulting). Monitor EU TED for relevant tenders.</div>
+        <div style="color:var(--purple);font-weight:600;padding:8px 0;">Month 8&ndash;12</div>
+        <div style="padding:8px 0;">Network at development events (UNIDO General Conference, Stockholm Convention COP). Publish PFAS case study. Leverage China connection for UNIDO South-South programs.</div>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:11px;margin-top:24px;text-align:center;">Research compiled March 2026. Sources: donor websites, OECD DAC, EU DG INTPA, UN procurement data, ILO fee tables, development consultant surveys.</p>
+  </div><!-- end research-view -->
+
+  <!-- DONORS VIEW -->
+  <div id="donors-view" style="display:none;padding:24px;max-width:1200px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="showCRM()" style="padding:8px 16px;border-radius:6px;border:2px solid #3b82f6;background:#3b82f6;color:#fff;cursor:pointer;font-weight:700;font-size:13px;">&larr; Back to CRM</button>
+        <h2 style="color:#3b82f6;font-size:22px;margin:0;">Donor Organizations &amp; Registration Links</h2>
+      </div>
+      <button onclick="showCRM()" style="width:34px;height:34px;border-radius:50%;border:2px solid #ef4444;background:transparent;color:#ef4444;cursor:pointer;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;">&times;</button>
+    </div>
+
+    <h3 style="color:#3b82f6;margin:0 0 16px;">UN Agencies</h3>
+    <div style="overflow-x:auto;margin-bottom:24px;">
+    <table class="donor-table">
+      <thead><tr><th>Organization</th><th>Mandate</th><th>Registration Portal</th><th>Relevance to Alessio</th></tr></thead>
+      <tbody>
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.unido.org/" target="_blank" onclick="event.stopPropagation()">UNIDO</a></td><td>Industrial development</td><td><a href="https://careers.unido.org/" target="_blank" onclick="event.stopPropagation()">careers.unido.org</a></td><td style="color:var(--success);font-weight:600;">CRITICAL &mdash; most relevant UN agency</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$356M budget</span><span class="brief-tag tag-hire">Hires 500+ consultants/yr</span><span class="brief-tag tag-focus">Industrial Development</span><br><strong>United Nations Industrial Development Organization</strong> &mdash; The only UN specialized agency focused exclusively on industrial development. UNIDO helps developing countries build manufacturing capacity, implement clean production technologies, and comply with international standards. <strong>Why Alessio:</strong> Your MSAT/technology transfer background is a direct match. UNIDO recruits experts for factory assessments, GMP implementation, cleaner production audits, and industrial energy efficiency projects. Register on their Individual Consultant roster and target ITPO Italy as your entry point.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.unido.org/itpo-italy" target="_blank" onclick="event.stopPropagation()">UNIDO ITPO Italy</a></td><td>Tech transfer Italy&harr;developing countries</td><td><a href="https://www.unido.org/itpo-italy" target="_blank" onclick="event.stopPropagation()">Contact directly</a></td><td style="color:var(--success);font-weight:600;">CRITICAL &mdash; your most direct connection</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-focus">Technology Transfer</span><span class="brief-tag tag-hire">Italy-based office</span><br><strong>UNIDO Investment &amp; Technology Promotion Office, Rome</strong> &mdash; Promotes partnerships between Italian companies and businesses in developing countries. Facilitates technology transfer, joint ventures, and investment promotion. <strong>Why Alessio:</strong> This is your strongest entry point. As an Italian-based pharma/manufacturing expert with China technology transfer experience, you are exactly the profile they need. They connect Italian industrial expertise with developing country needs &mdash; reach out directly to their Rome office.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.undp.org/" target="_blank" onclick="event.stopPropagation()">UNDP</a></td><td>Sustainable development</td><td><a href="https://www.undp.org/jobs" target="_blank" onclick="event.stopPropagation()">undp.org/jobs</a></td><td>Energy, environment, industry programs</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$5.5B/yr</span><span class="brief-tag tag-hire">Largest UN presence (170 countries)</span><span class="brief-tag tag-focus">SDGs</span><br><strong>United Nations Development Programme</strong> &mdash; The largest UN development agency, present in 170 countries. UNDP leads on SDG implementation including energy transition, environmental governance, and private sector development. <strong>Why Alessio:</strong> Their energy &amp; environment portfolio needs industrial experts for clean energy projects, manufacturing sustainability assessments, and SME support programs. Register on their procurement portal and monitor country office tenders.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.unep.org/" target="_blank" onclick="event.stopPropagation()">UNEP</a></td><td>Environment</td><td><a href="https://www.unep.org/about-un-environment/employment" target="_blank" onclick="event.stopPropagation()">unep.org careers</a></td><td style="color:var(--success);font-weight:600;">HIGH &mdash; PFAS/POPs, Stockholm Convention</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$800M/yr</span><span class="brief-tag tag-hire">Environmental experts</span><span class="brief-tag tag-focus">PFAS/POPs/Chemicals</span><br><strong>United Nations Environment Programme</strong> &mdash; The global environmental authority setting the agenda on pollution, chemicals management, and climate. Implements the Stockholm Convention (POPs), Minamata Convention (mercury), and the new Global Framework on Chemicals. <strong>Why Alessio:</strong> Your clean production and PFAS/chemical safety expertise is highly relevant. UNEP recruits consultants for industrial pollution assessments, chemical phase-out programs, and compliance with Multilateral Environmental Agreements.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.who.int/" target="_blank" onclick="event.stopPropagation()">WHO</a></td><td>Health</td><td><a href="https://www.who.int/careers" target="_blank" onclick="event.stopPropagation()">who.int/careers</a></td><td>GMP implementation for pharma manufacturers</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$6.7B/biennium</span><span class="brief-tag tag-hire">Prequalification experts</span><span class="brief-tag tag-focus">Pharma GMP</span><br><strong>World Health Organization</strong> &mdash; Sets international health standards including WHO GMP guidelines for pharmaceutical manufacturing. Runs the Prequalification Programme that inspects and certifies manufacturers in developing countries. <strong>Why Alessio:</strong> Your pharma manufacturing and GMP background is directly applicable. WHO recruits consultants for GMP inspection missions, manufacturing site assessments, and capacity building in local pharma production in Africa and Asia.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.intracen.org/" target="_blank" onclick="event.stopPropagation()">ITC</a></td><td>Trade &amp; SME competitiveness</td><td><a href="https://www.intracen.org/about-itc/working-with-itc/procurement/" target="_blank" onclick="event.stopPropagation()">intracen.org</a></td><td>SME export readiness, manufacturing quality</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$100M/yr</span><span class="brief-tag tag-hire">Trade advisors</span><span class="brief-tag tag-focus">SME Competitiveness</span><br><strong>International Trade Centre</strong> &mdash; Joint agency of UN and WTO focused on making SMEs in developing countries more competitive in global markets. Runs programs on export quality management, standards compliance, and supply chain integration. <strong>Why Alessio:</strong> Your manufacturing quality and export readiness expertise fits their SME support programs. ITC helps factories in developing countries meet international quality standards &mdash; exactly what MSAT professionals do.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.ilo.org/" target="_blank" onclick="event.stopPropagation()">ILO</a></td><td>Labour standards</td><td><a href="https://www.ilo.org/about-ilo/individual-consultant-opportunities" target="_blank" onclick="event.stopPropagation()">ilo.org consultants</a></td><td>Workplace safety, industrial standards</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$900M/biennium</span><span class="brief-tag tag-hire">OSH specialists</span><span class="brief-tag tag-focus">Workplace Safety</span><br><strong>International Labour Organization</strong> &mdash; Sets global labor standards including occupational safety &amp; health (OSH) in industrial settings. Runs programs to improve working conditions in factories across developing countries. <strong>Why Alessio:</strong> Your manufacturing plant experience includes EHS knowledge. ILO recruits consultants for factory safety assessments, industrial hygiene audits, and building capacity for national OSH inspectorates.</div></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 style="color:#8b5cf6;margin:0 0 16px;">Multilateral Development Banks (MDBs)</h3>
+    <div style="overflow-x:auto;margin-bottom:24px;">
+    <table class="donor-table">
+      <thead><tr><th>Organization</th><th>Region</th><th>Registration Portal</th><th>Relevance</th></tr></thead>
+      <tbody>
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.worldbank.org/" target="_blank" onclick="event.stopPropagation()">World Bank</a></td><td>Global</td><td><a href="https://www.worldbank.org/en/about/corporate-procurement/business-opportunities" target="_blank" onclick="event.stopPropagation()">WBGeProcure</a></td><td>Trade &amp; Competitiveness, Environment</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$73B lending/yr</span><span class="brief-tag tag-hire">12,000+ staff globally</span><span class="brief-tag tag-focus">189 member countries</span><br><strong>World Bank Group (IBRD/IDA)</strong> &mdash; The world&rsquo;s largest development bank, financing projects in 189 countries. Key practice areas include Trade &amp; Competitiveness, Environment &amp; Natural Resources, and Energy &amp; Extractives. <strong>Why Alessio:</strong> World Bank projects frequently need manufacturing and industrial experts for competitiveness assessments, environmental compliance, and technology upgrading programs. Register on WBGeProcure and target their trade facilitation and environmental projects.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.ifc.org/" target="_blank" onclick="event.stopPropagation()">IFC</a></td><td>Global (private sector)</td><td><a href="https://www.ifc.org/en/what-we-do/products-and-services/advisory-services" target="_blank" onclick="event.stopPropagation()">IFC Advisory</a></td><td style="color:var(--success);font-weight:600;">HIGH &mdash; manufacturing advisory, clean tech</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$23B investments/yr</span><span class="brief-tag tag-hire">Advisory Services division</span><span class="brief-tag tag-focus">Private Sector</span><br><strong>International Finance Corporation</strong> &mdash; The private-sector arm of the World Bank Group. IFC invests in and advises companies in developing countries, with a strong focus on manufacturing competitiveness, clean technology adoption, and environmental/social standards. <strong>Why Alessio:</strong> IFC Advisory Services hires consultants for factory-level assessments, clean production implementation, resource efficiency audits, and helping manufacturers meet IFC Performance Standards. Your MSAT + clean production profile is a strong match.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.ebrd.com/" target="_blank" onclick="event.stopPropagation()">EBRD</a></td><td>Europe, Central Asia, MENA</td><td><a href="https://www.ebrd.com/eform/egp/register" target="_blank" onclick="event.stopPropagation()">Expert Registry</a></td><td style="color:var(--success);font-weight:600;">HIGH &mdash; industrial energy efficiency</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">&euro;13B investments/yr</span><span class="brief-tag tag-hire">Expert Group registry</span><span class="brief-tag tag-focus">Energy Efficiency</span><br><strong>European Bank for Reconstruction &amp; Development</strong> &mdash; Invests in 38 economies from Central Europe to Central Asia and MENA. Strong focus on industrial energy efficiency, green economy transition, and SME support through Technical Cooperation programs. <strong>Why Alessio:</strong> EBRD runs major programs like FINTECC (green tech) and industrial energy audits. Register on their Expert Group Portal &mdash; they recruit consultants for factory energy assessments, clean technology implementation, and environmental due diligence.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.adb.org/" target="_blank" onclick="event.stopPropagation()">ADB</a></td><td>Asia-Pacific</td><td><a href="http://cms.adb.org/" target="_blank" onclick="event.stopPropagation()">ADB CMS</a></td><td>Infrastructure, industrial development</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$23B/yr</span><span class="brief-tag tag-hire">CMS consultant roster</span><span class="brief-tag tag-focus">Asia-Pacific</span><br><strong>Asian Development Bank</strong> &mdash; Finances development in 49 Asia-Pacific member countries. Key sectors include energy, transport, industry, and environment. <strong>Why Alessio:</strong> ADB funds industrial development and environmental projects across Asia. Your China technology transfer experience adds regional credibility. Register on their Consultant Management System (CMS) for individual consultant assignments.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.afdb.org/" target="_blank" onclick="event.stopPropagation()">AfDB</a></td><td>Africa</td><td><a href="https://www.afdb.org/en/projects-and-operations/procurement/consultancy-services-e-consultant" target="_blank" onclick="event.stopPropagation()">E-Consultant</a></td><td>Industrial development in Africa</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$10B/yr</span><span class="brief-tag tag-hire">E-Consultant database</span><span class="brief-tag tag-focus">Industrialize Africa</span><br><strong>African Development Bank</strong> &mdash; Main development bank for 54 African countries. &ldquo;Industrialize Africa&rdquo; is one of their five strategic priorities (High 5s). Funds manufacturing, energy, and infrastructure projects. <strong>Why Alessio:</strong> Africa&rsquo;s industrialization push needs manufacturing experts. AfDB recruits consultants for pharma manufacturing (local production), industrial parks, and clean energy projects. Register on the E-Consultant platform.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.aiib.org/" target="_blank" onclick="event.stopPropagation()">AIIB</a></td><td>Asia</td><td><a href="https://www.aiib.org/en/opportunities/business/project-procurement/list.html" target="_blank" onclick="event.stopPropagation()">AIIB Procurement</a></td><td>Infrastructure, sustainability</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$10B+ approved</span><span class="brief-tag tag-hire">Growing roster</span><span class="brief-tag tag-focus">Green Infrastructure</span><br><strong>Asian Infrastructure Investment Bank</strong> &mdash; China-initiated MDB (109 members) focused on sustainable infrastructure in Asia. Growing portfolio in energy, manufacturing, and environmental projects. <strong>Why Alessio:</strong> AIIB is relatively new and expanding rapidly. Less competition for consultant spots compared to established MDBs. Your China experience is an advantage given AIIB&rsquo;s headquarters and orientation.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.iadb.org/" target="_blank" onclick="event.stopPropagation()">IDB</a></td><td>Latin America</td><td><a href="https://jobs.iadb.org/" target="_blank" onclick="event.stopPropagation()">jobs.iadb.org</a></td><td>Manufacturing, clean technology</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$14B/yr</span><span class="brief-tag tag-hire">Consultant contracts</span><span class="brief-tag tag-focus">Latin America &amp; Caribbean</span><br><strong>Inter-American Development Bank</strong> &mdash; The leading development bank for Latin America and the Caribbean (26 borrowing countries). Funds industrial competitiveness, clean technology, and environmental sustainability projects. <strong>Why Alessio:</strong> IDB runs SME competitiveness and clean production programs across the region. Manufacturing experts are needed for factory assessments, environmental compliance, and technology transfer projects.</div></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 style="color:#06b6d4;margin:0 0 16px;">EU &amp; Bilateral Agencies</h3>
+    <div style="overflow-x:auto;margin-bottom:24px;">
+    <table class="donor-table">
+      <thead><tr><th>Organization</th><th>Country</th><th>Portal / Tenders</th><th>Relevance</th></tr></thead>
+      <tbody>
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://international-partnerships.ec.europa.eu/" target="_blank" onclick="event.stopPropagation()">EU DG INTPA</a></td><td>EU</td><td><a href="https://international-partnerships.ec.europa.eu/funding-and-technical-assistance/looking-funding/framework-contracts/framework-contract-sea-2023_en" target="_blank" onclick="event.stopPropagation()">SEA 2023 FWC</a></td><td style="color:var(--success);font-weight:600;">CRITICAL &mdash; largest framework contracts</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">&euro;79.5B (2021-2027)</span><span class="brief-tag tag-hire">Framework Contracts</span><span class="brief-tag tag-focus">Global South</span><br><strong>EU Directorate-General for International Partnerships</strong> &mdash; Manages the EU&rsquo;s &euro;79.5B NDICI-Global Europe instrument. Implements development cooperation through Framework Contracts (FWC), the largest being SEA 2023 with 17 thematic lots. Consultants are hired through consortium firms (NIRAS, GFA, Ecorys, etc.). <strong>Why Alessio:</strong> This is the single biggest source of consulting work in international development. Register as an expert with multiple FWC consortium firms below. Your profile fits Lot 4 (Energy), Lot 8 (Environment), and Lot 10 (Trade).</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.aics.gov.it/?lang=en" target="_blank" onclick="event.stopPropagation()">AICS</a></td><td>Italy</td><td><a href="https://www.aics.gov.it/" target="_blank" onclick="event.stopPropagation()">aics.gov.it</a></td><td style="color:var(--success);font-weight:600;">CRITICAL &mdash; Italian cooperation, Mattei Plan</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">&euro;5.5B Mattei Plan</span><span class="brief-tag tag-hire">Italian experts preferred</span><span class="brief-tag tag-focus">Africa &amp; Mediterranean</span><br><strong>Agenzia Italiana per la Cooperazione allo Sviluppo</strong> &mdash; Italy&rsquo;s bilateral development agency. Implements the &euro;5.5B &ldquo;Piano Mattei&rdquo; for Africa announced by PM Meloni, focusing on energy, agriculture, health, and industrial development. Works in 20+ priority countries. <strong>Why Alessio:</strong> As an Italian national, you have a strong advantage. AICS actively seeks Italian experts for technical assistance. The Mattei Plan&rsquo;s industrial development and energy components are a perfect match for your profile. Italian language gives you an edge over competitors.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.giz.de/en/html/index.html" target="_blank" onclick="event.stopPropagation()">GIZ</a></td><td>Germany</td><td><a href="https://www.giz.de/en/workingwithgiz/bidding_procurement.html" target="_blank" onclick="event.stopPropagation()">GIZ tenders</a></td><td>Industrial development, SME promotion</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">&euro;3.7B/yr</span><span class="brief-tag tag-hire">International experts</span><span class="brief-tag tag-focus">120+ countries</span><br><strong>Deutsche Gesellschaft f&uuml;r Internationale Zusammenarbeit</strong> &mdash; Germany&rsquo;s main development agency with 25,000+ staff in 120 countries. Strong programs in industrial development, SME promotion, energy efficiency, and environmental governance. <strong>Why Alessio:</strong> GIZ runs major programs on sustainable manufacturing, industrial energy efficiency, and private sector development. They hire international consultants for short-term technical assistance missions. Check their tender portal regularly.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.kfw-entwicklungsbank.de/International-financing/KfW-Development-Bank/" target="_blank" onclick="event.stopPropagation()">KfW</a></td><td>Germany</td><td>Via GTAI database</td><td>Manufacturing, clean energy finance</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">&euro;10B+/yr development</span><span class="brief-tag tag-hire">Via implementing partners</span><span class="brief-tag tag-focus">Green Finance</span><br><strong>KfW Development Bank</strong> &mdash; Germany&rsquo;s development bank providing concessional loans and grants for projects in developing countries. Major focus on renewable energy, energy efficiency, and environmental protection. <strong>Why Alessio:</strong> KfW finances projects that need technical consultants for feasibility studies, industrial energy audits, and environmental impact assessments. Often works through GIZ or local implementing partners.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.jica.go.jp/english/" target="_blank" onclick="event.stopPropagation()">JICA</a></td><td>Japan</td><td><a href="https://www.jica.go.jp/english/" target="_blank" onclick="event.stopPropagation()">jica.go.jp</a></td><td>Technology transfer programs</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$15B ODA/yr</span><span class="brief-tag tag-hire">Technical cooperation experts</span><span class="brief-tag tag-focus">Asia &amp; Africa</span><br><strong>Japan International Cooperation Agency</strong> &mdash; Japan&rsquo;s bilateral aid agency, known for &ldquo;Kaizen&rdquo; (continuous improvement) programs that transfer Japanese manufacturing methodology to developing countries. Active in 150+ countries. <strong>Why Alessio:</strong> JICA&rsquo;s Kaizen programs need manufacturing experts who understand lean production, quality management, and technology transfer &mdash; core MSAT competencies. Their approach to industrialization aligns well with your hands-on factory experience.</div></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 style="color:#f59e0b;margin:0 0 16px;">EU Framework Contract Consortium Firms (Register as Expert)</h3>
+    <div style="overflow-x:auto;margin-bottom:24px;">
+    <table class="donor-table">
+      <thead><tr><th>Firm</th><th>Country</th><th>EU FWC Role</th><th>Expert Registration</th></tr></thead>
+      <tbody>
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.niras.com/" target="_blank" onclick="event.stopPropagation()">NIRAS</a></td><td>Denmark</td><td>Won 12 of 17 SEA 2023 Lots</td><td><a href="https://www.niras.com/" target="_blank" onclick="event.stopPropagation()">Join expert network</a></td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">4,000+ employees</span><span class="brief-tag tag-hire">Expert database open</span><span class="brief-tag tag-focus">EU FWC leader</span><br><strong>NIRAS A/S</strong> &mdash; Danish consulting firm that won an unprecedented 12 out of 17 lots in the EU SEA 2023 Framework Contract. The dominant player in EU-funded technical assistance. <strong>Why Alessio:</strong> Registering with NIRAS gives you access to the most EU project opportunities. They constantly search their expert database when bidding on new assignments. Submit your CV with keywords matching their lot descriptions (energy, environment, trade, industry).</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.gfa-group.de/" target="_blank" onclick="event.stopPropagation()">GFA Consulting</a></td><td>Germany</td><td>Multiple lots</td><td><a href="https://www.gfa-group.de/" target="_blank" onclick="event.stopPropagation()">Expert database</a></td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">1,500+ projects completed</span><span class="brief-tag tag-hire">Expert network</span><span class="brief-tag tag-focus">EU &amp; GIZ projects</span><br><strong>GFA Consulting Group</strong> &mdash; Major German development consulting firm, active in 130+ countries. Implements EU framework contracts, GIZ projects, and KfW assignments. Strong in agriculture, energy, governance, and economic development. <strong>Why Alessio:</strong> Register in their expert database for EU FWC project call-ups. GFA handles energy, environment, and trade lots where your profile fits. German firms also subcontract to Italian experts for Mediterranean/Africa projects.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.ecorys.com/" target="_blank" onclick="event.stopPropagation()">Ecorys</a></td><td>Netherlands</td><td>Multiple lots</td><td><a href="https://www.ecorys.com/" target="_blank" onclick="event.stopPropagation()">Expert registration</a></td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">5,000+ projects</span><span class="brief-tag tag-hire">Expert pool</span><span class="brief-tag tag-focus">EU evaluations &amp; TA</span><br><strong>Ecorys</strong> &mdash; Dutch research and consulting firm specializing in EU-funded evaluations, technical assistance, and policy advisory. Strong in trade, economic development, and environmental policy. <strong>Why Alessio:</strong> Ecorys handles evaluation and technical assistance lots. They need sector experts to complement their policy analysts. Your industrial/manufacturing expertise fills a gap most development consultants don&rsquo;t cover.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.particip.de/" target="_blank" onclick="event.stopPropagation()">Particip</a></td><td>Germany</td><td>Leads evaluation lots</td><td><a href="https://www.particip.de/" target="_blank" onclick="event.stopPropagation()">Expert network</a></td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">EU evaluation specialist</span><span class="brief-tag tag-hire">Expert roster</span><span class="brief-tag tag-focus">M&amp;E</span><br><strong>Particip GmbH</strong> &mdash; German firm specialized in monitoring, evaluation, and learning (MEL) for EU-funded programs. Leads several evaluation lots under SEA 2023. <strong>Why Alessio:</strong> Even evaluation missions need sector experts. When EU evaluates an industrial development program, they need someone who understands manufacturing &mdash; not just an M&amp;E generalist. Register and specify your sectoral expertise.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.ntu.eu/" target="_blank" onclick="event.stopPropagation()">NTU International</a></td><td>Austria</td><td>Multiple lots</td><td><a href="https://www.ntu.eu/" target="_blank" onclick="event.stopPropagation()">Expert database</a></td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">EU &amp; MDB projects</span><span class="brief-tag tag-hire">Expert database</span><span class="brief-tag tag-focus">Infrastructure &amp; environment</span><br><strong>NTU International</strong> &mdash; Austrian consulting firm active in EU and MDB-funded projects. Specializes in infrastructure, transport, energy, and environment sectors across Europe, Central Asia, and Africa. <strong>Why Alessio:</strong> NTU handles energy and environment lots where industrial expertise is valued. Their Central Asia and Mediterranean portfolio is relevant to your profile.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.dai.com/" target="_blank" onclick="event.stopPropagation()">DAI Global</a></td><td>USA/UK</td><td>5,200+ staff, 150+ countries</td><td><a href="https://www.dai.com/" target="_blank" onclick="event.stopPropagation()">Expert roster</a></td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$900M+ revenue</span><span class="brief-tag tag-hire">5,200+ staff</span><span class="brief-tag tag-focus">USAID &amp; EU prime</span><br><strong>DAI Global</strong> &mdash; One of the world&rsquo;s largest international development firms. Prime contractor for USAID, FCDO, and EU. Works in economic growth, governance, environment, and health across 150+ countries. <strong>Why Alessio:</strong> DAI&rsquo;s economic growth practice implements industrial competitiveness and trade facilitation projects. They recruit short-term technical experts for USAID and EU-funded programs. Register on their expert roster for call-up assignments.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.tetratech.com/" target="_blank" onclick="event.stopPropagation()">Tetra Tech</a></td><td>USA/UK</td><td>Environment, energy</td><td><a href="https://www.tetratech.com/" target="_blank" onclick="event.stopPropagation()">Expert database</a></td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$4B+ revenue</span><span class="brief-tag tag-hire">28,000+ employees</span><span class="brief-tag tag-focus">Environment &amp; Energy</span><br><strong>Tetra Tech</strong> &mdash; Global engineering and consulting firm with a major international development division. Implements USAID&rsquo;s largest environment and energy programs. <strong>Why Alessio:</strong> Tetra Tech&rsquo;s development division runs clean energy, environmental compliance, and pollution reduction programs in developing countries. Your clean production and PFAS expertise aligns with their environment portfolio.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.chemonics.com/" target="_blank" onclick="event.stopPropagation()">Chemonics</a></td><td>USA</td><td>5,500+ staff, USAID prime</td><td><a href="https://www.chemonics.com/" target="_blank" onclick="event.stopPropagation()">Expert database</a></td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">$1.5B+ contracts</span><span class="brief-tag tag-hire">5,500+ staff</span><span class="brief-tag tag-focus">USAID prime contractor</span><br><strong>Chemonics International</strong> &mdash; One of USAID&rsquo;s largest prime contractors, working in 95+ countries. Programs in economic growth, environment, health, and governance. <strong>Why Alessio:</strong> Chemonics runs USAID-funded trade facilitation, private sector development, and environmental programs. They recruit short-term technical experts for field missions. Strong in Africa and Asia where manufacturing capacity building is a priority.</div></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3 style="color:#10b981;margin:0 0 16px;">Job &amp; Opportunity Platforms</h3>
+    <div style="overflow-x:auto;margin-bottom:24px;">
+    <table class="donor-table">
+      <thead><tr><th>Platform</th><th>URL</th><th>Type</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.ungm.org/" target="_blank" onclick="event.stopPropagation()">UNGM</a></td><td>ungm.org</td><td>UN vendor registration (500k+ suppliers)</td><td>Free</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">500k+ registered suppliers</span><span class="brief-tag tag-hire">Individual consultants welcome</span><span class="brief-tag tag-focus">All UN agencies</span><br><strong>United Nations Global Marketplace</strong> &mdash; The central registration platform for all UN procurement. Once registered, your profile is visible to all UN agencies when they search for consultants. <strong>Tip:</strong> Register as an individual consultant, complete all profile sections, and use keywords like &ldquo;technology transfer,&rdquo; &ldquo;clean production,&rdquo; &ldquo;GMP,&rdquo; and &ldquo;industrial development&rdquo; in your expertise description. This is a must-do first step.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.devex.com/" target="_blank" onclick="event.stopPropagation()">DevEx</a></td><td>devex.com</td><td>Jobs, tenders, news &mdash; &ldquo;LinkedIn of development&rdquo;</td><td>Free basic; Pro available</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">1M+ members</span><span class="brief-tag tag-hire">Job alerts &amp; tenders</span><span class="brief-tag tag-focus">Networking</span><br><strong>Devex</strong> &mdash; The largest media platform for the global development community. Think of it as &ldquo;LinkedIn + job board + news&rdquo; for international development. Posts consulting opportunities, tenders, and industry news. <strong>Tip:</strong> Create a free profile, set up job alerts for &ldquo;industrial consultant,&rdquo; &ldquo;manufacturing expert,&rdquo; and &ldquo;technology transfer.&rdquo; Pro membership ($100/yr) gives access to full tender documents and advanced search.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.developmentaid.org/" target="_blank" onclick="event.stopPropagation()">DevelopmentAid</a></td><td>developmentaid.org</td><td>Jobs, tenders, consultant database</td><td>Paid for full access</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">100k+ tenders tracked</span><span class="brief-tag tag-hire">Consultant marketplace</span><span class="brief-tag tag-focus">Tender aggregator</span><br><strong>DevelopmentAid</strong> &mdash; Aggregates tenders, grants, and consulting opportunities from all major donors (UN, EU, MDBs, bilaterals). Their consultant database is searched by firms building project teams. <strong>Tip:</strong> The paid membership (~$30/mo) is worth it once you&rsquo;re actively pursuing consulting. It gives full access to tender documents and lets consulting firms find your profile when assembling expert teams.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://reliefweb.int/jobs" target="_blank" onclick="event.stopPropagation()">ReliefWeb</a></td><td>reliefweb.int/jobs</td><td>UN OCHA platform &mdash; humanitarian + development</td><td>Free</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">Free</span><span class="brief-tag tag-hire">Job alerts</span><span class="brief-tag tag-focus">UN OCHA managed</span><br><strong>ReliefWeb</strong> &mdash; Run by UN OCHA, this is the go-to platform for humanitarian and development job postings. Posts consultancies from UN agencies, NGOs, and development organizations. <strong>Tip:</strong> Set up email alerts for consultant positions. While more humanitarian-focused, many development consulting roles appear here, especially for UNIDO, UNDP, and UNEP assignments.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://unjobs.org/" target="_blank" onclick="event.stopPropagation()">UNjobs</a></td><td>unjobs.org</td><td>Aggregates all UN system vacancies</td><td>Free</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">Free</span><span class="brief-tag tag-hire">All UN vacancies in one place</span><span class="brief-tag tag-focus">Aggregator</span><br><strong>UNjobs</strong> &mdash; Independent aggregator that scrapes and consolidates job postings from all 44 UN system organizations in one searchable interface. <strong>Tip:</strong> Useful for monitoring consultant openings across the entire UN system without checking each agency individually. Set alerts for &ldquo;consultant&rdquo; + your keywords.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://ted.europa.eu/" target="_blank" onclick="event.stopPropagation()">EU TED</a></td><td>ted.europa.eu</td><td>EU public procurement (&euro;815B+ value)</td><td>Free</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">&euro;815B+/yr published</span><span class="brief-tag tag-hire">All EU-funded tenders</span><span class="brief-tag tag-focus">Official EU portal</span><br><strong>Tenders Electronic Daily</strong> &mdash; The official EU public procurement journal. All EU-funded tenders above threshold values must be published here, including development cooperation contracts managed by DG INTPA. <strong>Tip:</strong> Set up a search profile with CPV codes related to consulting services. Filter by &ldquo;services&rdquo; and keywords like &ldquo;technical assistance,&rdquo; &ldquo;industrial development.&rdquo; This is where large EU framework contract tenders are first published.</div></td></tr>
+
+        <tr class="donor-row" onclick="toggleDonor(this)"><td style="font-weight:600;"><a href="https://www.impactpool.org/" target="_blank" onclick="event.stopPropagation()">ImpactPool</a></td><td>impactpool.org</td><td>International organization jobs</td><td>Free basic</td></tr>
+        <tr class="donor-detail"><td colspan="4"><div class="donor-brief"><span class="brief-tag tag-budget">Free basic</span><span class="brief-tag tag-hire">CV matching</span><span class="brief-tag tag-focus">International orgs</span><br><strong>ImpactPool</strong> &mdash; Career platform for international organizations. Features AI-powered CV matching and job alerts from UN, MDBs, and international NGOs. <strong>Tip:</strong> Upload your CV and let their matching algorithm suggest relevant opportunities. Good supplement to direct agency registration.</div></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:11px;text-align:center;">Complete donor database compiled March 2026. Sources: official donor websites, EU DG INTPA, OECD DAC.</p>
+  </div><!-- end donors-view -->
+
+  <!-- CV VIEW -->
+  <div id="cv-view" style="display:none;padding:24px 32px;max-width:900px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button onclick="showCRM()" style="padding:8px 16px;border-radius:6px;border:2px solid #10b981;background:#10b981;color:#fff;cursor:pointer;font-weight:700;font-size:13px;">&larr; Back to CRM</button>
+        <select id="cv-variant-select" onchange="switchCVVariant(this.value)" style="padding:8px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--card-bg);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;">
+          <option value="devcon">International Development Consultant</option>
+          <option value="cleanprod">Clean Production &amp; Environmental Expert</option>
+          <option value="techtransfer">Technology Transfer Specialist</option>
+          <option value="manufacturing">Manufacturing Competitiveness Expert</option>
+          <option value="italiano">Consulente Sviluppo Industriale (Italiano)</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="downloadPDF()" style="padding:8px 16px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-weight:600;">PDF</button>
+        <button onclick="downloadWord()" style="padding:8px 16px;border-radius:6px;border:1px solid #10b981;background:#10b981;color:#fff;cursor:pointer;font-weight:600;">Word</button>
+        <button onclick="showCRM()" style="width:34px;height:34px;border-radius:50%;border:2px solid #ef4444;background:transparent;color:#ef4444;cursor:pointer;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;">&times;</button>
+      </div>
+    </div>
+    <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--purple);">
+      <strong>Consulting CV:</strong> Each variant targets a different development consulting niche. Download as PDF or Word for donor applications.
+    </div>
+    <div id="cv-content" style="background:#fff;color:#1a1a2e;border-radius:12px;padding:48px 52px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.55;font-size:13.5px;">
+      <div id="cv-dynamic"></div>
+    </div>
+
+    <!-- EOI GENERATOR -->
+    <div style="margin-top:24px;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <h3 style="font-size:15px;color:var(--purple);margin:0;">Expression of Interest (EOI) Generator</h3>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="cl-contact-select" onchange="generateEOI()" style="padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;max-width:280px;">
+            <option value="">Select an organization...</option>
+          </select>
+          <button onclick="copyEOI()" style="padding:6px 14px;border-radius:6px;border:1px solid var(--purple);background:var(--purple);color:#fff;cursor:pointer;font-size:12px;font-weight:600;">Copy</button>
+          <button onclick="downloadEOIWord()" style="padding:6px 14px;border-radius:6px;border:1px solid #10b981;background:#10b981;color:#fff;cursor:pointer;font-size:12px;font-weight:600;">Word</button>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">Generates a structured Expression of Interest for donor roster registration or assignment applications. Combines the active CV variant focus with your relevant expertise for the selected organization.</p>
+      <div id="cl-output" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;min-height:100px;font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--text);">Select an organization above to generate an Expression of Interest.</div>
+    </div>
+  </div><!-- end cv-view -->
+
+  <!-- GUIDE VIEW -->
+  <div id="guide-view" style="display:none;padding:24px;max-width:1000px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="showCRM()" style="padding:8px 16px;border-radius:6px;border:2px solid var(--warning);background:var(--warning);color:#000;cursor:pointer;font-weight:700;font-size:13px;">&larr; Back to CRM</button>
+        <h2 style="color:var(--warning);font-size:22px;margin:0;">Consulting CRM Guide</h2>
+      </div>
+      <button onclick="showCRM()" style="width:34px;height:34px;border-radius:50%;border:2px solid #ef4444;background:transparent;color:#ef4444;cursor:pointer;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;">&times;</button>
+    </div>
+
+    <div class="guide-section">
+      <h3>What is this CRM?</h3>
+      <p>This is your <strong>Consulting CRM</strong> &mdash; separate from the Jobs CRM. It tracks your registrations with donor organizations, consulting firms, and platforms for international development freelance consulting.</p>
+      <p style="margin-top:8px;">Many donor organizations (UN, World Bank, EU, bilateral agencies) hire freelance consultants for technical assistance projects in developing countries. Your skills in technology transfer, clean production, and manufacturing optimization are in high demand.</p>
+    </div>
+
+    <div class="guide-section">
+      <h3>Two CRMs, Two Tracks</h3>
+      <ul>
+        <li><strong>Jobs CRM</strong> (crm.html) &mdash; Pharma MSAT positions, direct employment contacts</li>
+        <li><strong>Consulting CRM</strong> (this page) &mdash; Donor organizations, framework contract firms, registration tracking</li>
+      </ul>
+      <p style="margin-top:8px;">Use the <strong>&ldquo;Jobs CRM &rarr;&rdquo;</strong> button in the top bar to switch between them.</p>
+    </div>
+
+    <div class="guide-section">
+      <h3>Registration Pipeline</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <span style="padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--text-muted);">Not Registered</span>
+        <span style="color:var(--text-muted);align-self:center;">&rarr;</span>
+        <span style="padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--warning);color:var(--warning);">Profile Created</span>
+        <span style="color:var(--text-muted);align-self:center;">&rarr;</span>
+        <span style="padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--accent);color:var(--accent);">Application Sent</span>
+        <span style="color:var(--text-muted);align-self:center;">&rarr;</span>
+        <span style="padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--success);color:var(--success);">Registered</span>
+        <span style="color:var(--text-muted);align-self:center;">&rarr;</span>
+        <span style="padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid var(--purple);color:var(--purple);">Shortlisted</span>
+        <span style="color:var(--text-muted);align-self:center;">&rarr;</span>
+        <span style="padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid #34d399;color:#34d399;">Active Engagement</span>
+      </div>
+    </div>
+
+    <div class="guide-section">
+      <h3>Pages Overview</h3>
+      <ul>
+        <li><strong>CRM</strong> &mdash; Track registration status with each organization</li>
+        <li><strong>Research</strong> &mdash; Market data, rate benchmarks, skill mapping, registration roadmap</li>
+        <li><strong>Donors</strong> &mdash; Complete list of donor orgs with registration links</li>
+        <li><strong>CV</strong> &mdash; Consulting-oriented CV variants + Expression of Interest (EOI) generator</li>
+      </ul>
+    </div>
+
+    <div class="guide-section">
+      <h3>Tips</h3>
+      <ul>
+        <li><strong>Start with UNGM + DevEx + UNIDO</strong> &mdash; highest priority registrations</li>
+        <li><strong>Register with EU consortium firms</strong> &mdash; NIRAS, GFA, Ecorys, Particip &mdash; to get into their expert databases</li>
+        <li><strong>Emphasize PFAS expertise</strong> &mdash; globally rare, high demand from UNEP/GEF/Stockholm Convention</li>
+        <li><strong>Leverage your Chinese</strong> &mdash; opens UNIDO South-South and AIIB opportunities</li>
+        <li><strong>Export regularly</strong> &mdash; data is in browser localStorage</li>
+      </ul>
+    </div>
+  </div><!-- end guide-view -->
+
+</div>
+
+<script>
+// === PASSCODE ===
+let RESOLVED_HASH = null;
+async function sha256(str){const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");}
+sha256("123").then(h=>{RESOLVED_HASH=h;if(localStorage.getItem("alessio_consult_auth")===h)unlock();});
+function unlock(){document.getElementById("passcode-screen").style.display="none";document.getElementById("app").style.display="block";renderContacts();updateStats();}
+async function checkPasscode(){const h=await sha256(document.getElementById("passcode-input").value);if(h===RESOLVED_HASH){localStorage.setItem("alessio_consult_auth",RESOLVED_HASH);unlock();}else{document.getElementById("passcode-error").style.display="block";document.getElementById("passcode-input").value="";document.getElementById("passcode-input").focus();}}
+document.getElementById("passcode-input").addEventListener("keydown",e=>{if(e.key==="Enter")checkPasscode();});
+
+// === THEME ===
+function toggleTheme(){document.body.classList.toggle('light');const l=document.body.classList.contains('light');localStorage.setItem('alessio_consult_theme',l?'light':'dark');document.getElementById('theme-toggle').innerHTML=l?'&#9790;':'&#9788;';}
+(function(){if(localStorage.getItem('alessio_consult_theme')==='light'){document.body.classList.add('light');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('theme-toggle');if(b)b.innerHTML='&#9790;';});}})();
+
+// === VIEWS ===
+function showView(v){
+  ['crm-view','research-view','donors-view','cv-view','guide-view'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=id===v+'-view'?'block':'none';});
+  const btns={research:{id:'toggle-research-btn',bg:'#6366f1',text:'Research'},donors:{id:'toggle-donors-btn',bg:'#06b6d4',text:'Donors'},cv:{id:'toggle-cv-btn',bg:'#10b981',text:'CV'},guide:{id:'toggle-guide-btn',bg:'#f59e0b',text:'Help'}};
+  Object.entries(btns).forEach(([key,cfg])=>{const b=document.getElementById(cfg.id);if(!b)return;const active=v===key;b.style.background=active?'var(--bg)':cfg.bg;b.style.color=active?'var(--text-muted)':(key==='guide'?'#000':'#fff');b.style.borderColor=active?'var(--border)':cfg.bg;b.textContent=active?'Back to CRM':cfg.text;});
+  window.scrollTo(0,0);
+}
+function toggleResearch(){showView(document.getElementById('research-view').style.display!=='none'?'crm':'research');}
+function toggleDonors(){showView(document.getElementById('donors-view').style.display!=='none'?'crm':'donors');}
+function toggleCV(){const s=document.getElementById('cv-view').style.display!=='none';showView(s?'crm':'cv');if(!s){switchCVVariant(document.getElementById('cv-variant-select').value);populateCLContacts();}}
+function toggleGuide(){showView(document.getElementById('guide-view').style.display!=='none'?'crm':'guide');}
+function showCRM(){showView('crm');}
+
+function toggleDonor(row){
+  row.classList.toggle('open');
+  const detail=row.nextElementSibling;
+  if(detail&&detail.classList.contains('donor-detail')){detail.classList.toggle('open');}
+}
+
+// === CONTACTS DATA ===
+const contacts = [
+  // === UN AGENCIES ===
+  {id:"u1",name:"UNIDO ITPO Italy",title:"Investment & Technology Promotion Office — Diana Battaggia, Head",company:"UNIDO",category:"un",priority:1,location:"Rome, Italy",website:"https://www.unido.org/itpo-italy",email:"itpo-italy@unido.org",registrationUrl:"https://www.unido.org/itpo-italy",howToApproach:"This is your MOST DIRECT connection. UNIDO ITPO Italy promotes technology transfer between Italy and developing countries — EXACTLY what you did at Solvay (Italy↔China). Contact Diana Battaggia directly. Mention cross-continental tech transfer, 5 languages, manufacturing expertise. Request a meeting.",message:`Subject: Senior Process Engineer — technology transfer expertise for UNIDO industrial development programs\n\nDear Ms. Battaggia,\n\nI am writing to introduce myself as a potential expert resource for UNIDO's technology transfer and industrial development programs.\n\nMy profile combines direct experience in the type of work UNIDO promotes:\n- 5 years leading cross-continental technology transfer between Italy and China (Solvay Specialty Polymers)\n- Scale-up from lab/pilot to full-scale manufacturing across multiple product lines\n- 95% emission reduction coordinating 50-person cross-functional task force (PFAS/Stockholm Convention relevance)\n- Lean Six Sigma Black Belt — manufacturing competitiveness and process optimization\n- Currently Senior Process Engineer at INEOS Inovyn (Seveso III regulated)\n- 5 languages: Italian (native), English (C2), Chinese (B1), French, German\n- MSc Chemical Engineering, University of Pisa (cum laude)\n\nI believe my combination of hands-on technology transfer experience, multilingual capability, and deep manufacturing expertise could contribute to UNIDO programs in clean production, industrial development, and technology transfer to developing countries.\n\nI would welcome the opportunity to discuss how I might contribute to ITPO Italy's mission.\n\nBest regards,\nAlessio Mencaroni\nalessio.mencaroni@icloud.com\n+39 347 803 1137`},
+
+  {id:"u2",name:"UNIDO Consultant Roster",title:"Procurement — Manufacturing & Industrial Development Division",company:"UNIDO",category:"un",priority:2,location:"Vienna, Austria",website:"https://www.unido.org/",email:"procurement@unido.org",registrationUrl:"https://careers.unido.org/",howToApproach:"Register by applying to relevant vacancies on careers.unido.org. Your profile enters their talent pipeline. Focus areas: clean production, technology transfer, industrial efficiency, chemical safety (PFAS). UNIDO runs National Cleaner Production Centres in 47 countries.",message:`Subject: Expert registration — technology transfer, clean production, chemical safety\n\nDear UNIDO Procurement Team,\n\nI wish to register as an individual consultant for UNIDO programs in technology transfer, clean production, and chemical safety.\n\nKey qualifications:\n- 11 years process engineering in complex manufacturing (current: INEOS Inovyn, Seveso III)\n- 5 years cross-continental technology transfer Italy↔China (Solvay Specialty Polymers)\n- 95% PFAS emission reduction — directly relevant to Stockholm Convention technical assistance\n- Lean Six Sigma Black Belt — manufacturing competitiveness\n- 5 languages including Chinese — ideal for South-South cooperation programs\n- MSc Chemical Engineering, University of Pisa (110/110 cum laude)\n\nI have attached my CV and am available for assignments in industrial development, clean production, and technology transfer.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"u3",name:"UNEP Chemicals & Pollution Action",title:"Stockholm Convention Technical Assistance — POPs/PFAS Programs",company:"UNEP",category:"un",priority:3,location:"Geneva / Nairobi",website:"https://www.unep.org/topics/chemicals-and-pollution-action",email:"brs@un.org",registrationUrl:"https://www.unep.org/about-un-environment/employment",howToApproach:"Your PFAS expertise is GLOBALLY RARE in the development world. Stockholm Convention listed PFOA in 2019, PFHxS in 2022. Developing countries need technical experts for National Implementation Plans. Lead with your 95% reduction achievement. Also register via BRS Conventions Secretariat.",message:`Subject: PFAS/POPs technical expert — 95% emission reduction experience for Stockholm Convention programs\n\nDear BRS Secretariat,\n\nI wish to register as a technical expert for Stockholm Convention technical assistance programs, specifically for PFAS/POPs management in developing countries.\n\nI bring rare, hands-on PFAS management expertise:\n- Achieved 95% reduction in PFAS micropollutant emissions at a major European fluoropolymer production site\n- Coordinated 50-person cross-functional task force under severe regulatory scrutiny\n- 4,000 environmental samples/year structured monitoring program\n- Technical leadership across R&D, HSE, Production, Engineering, and Analytical teams\n- 5 years working with fluoropolymers (PTFE, PVDF, FKM, FFKM) — deep understanding of PFAS chemistry\n\nThis combination of practical PFAS elimination experience and cross-cultural project management (5 languages) makes me well-suited to support developing countries implementing their National Implementation Plans.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"u4",name:"WHO Local Production Unit",title:"Health Products Policy — GMP Implementation in Developing Countries",company:"WHO",category:"un",priority:8,location:"Geneva, Switzerland",website:"https://www.who.int/teams/health-product-policy-and-standards",email:"",registrationUrl:"https://www.who.int/careers",howToApproach:"WHO recruits consultants for on-site GMP assessments and technology transfer for pharmaceutical manufacturers in developing countries. Your MSAT and scale-up experience applies here. Register on WHO careers portal and monitor for consultant vacancies in GMP/manufacturing.",message:`Subject: Process engineer with technology transfer and manufacturing scale-up expertise for GMP programs\n\nDear WHO Local Production Unit,\n\nI am a Senior Process Engineer with 11 years of manufacturing experience, including 5 years of cross-continental technology transfer, seeking to contribute to WHO's GMP implementation programs in developing countries.\n\nRelevant expertise: technology transfer (Italy↔China), process scale-up from lab to full-scale, Lean Six Sigma Black Belt, formal IMS ownership under Seveso III regulations (equivalent compliance rigor to GMP), and ongoing GMP professional development.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"u5",name:"ITC Trade & SME Competitiveness",title:"International Trade Centre — Manufacturing Quality & Export Readiness",company:"ITC (UN/WTO)",category:"un",priority:10,location:"Geneva, Switzerland",website:"https://www.intracen.org/",email:"",registrationUrl:"https://www.intracen.org/about-itc/working-with-itc/procurement/",howToApproach:"ITC helps SMEs in developing countries become export-competitive. Your Lean Six Sigma and manufacturing optimization skills are directly applicable. Register via their procurement portal.",message:`Subject: Manufacturing competitiveness expert — Lean Six Sigma, process optimization for SME development\n\nI offer 11 years of manufacturing process optimization experience, Lean Six Sigma Black Belt certification, and cross-cultural project management across 4 countries to support ITC's SME competitiveness programs.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  // === MDBs ===
+  {id:"b1",name:"EBRD Expert Registry",title:"Industrial Energy Efficiency & Environmental Programs",company:"EBRD",category:"mdb",priority:4,location:"London, UK",website:"https://www.ebrd.com/",email:"",registrationUrl:"https://www.ebrd.com/eform/egp/register",howToApproach:"EBRD operates in 38 economies (Central Europe to Central Asia and MENA). Strong focus on industrial energy efficiency, environmental compliance, clean technology. Register on the Expert Registry with your CV. Also register on eSelection platform for specific assignments.",message:`Subject: Expert registration — industrial process optimization, environmental compliance, technology transfer\n\nDear EBRD Expert Registry,\n\nI wish to register as an individual expert for EBRD programs in industrial energy efficiency, environmental compliance, and manufacturing competitiveness.\n\n11 years of process engineering in compliance-driven manufacturing, Lean Six Sigma Black Belt, 95% emission reduction achievement, and cross-continental technology transfer experience.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"b2",name:"World Bank WBGeProcure",title:"Trade & Competitiveness / Environment Practice",company:"World Bank",category:"mdb",priority:5,location:"Washington, DC",website:"https://www.worldbank.org/",email:"",registrationUrl:"https://www.worldbank.org/en/about/corporate-procurement/business-opportunities",howToApproach:"Register as potential supplier on WBGeProcure. Relevant practice areas: Trade & Competitiveness, Environment & Natural Resources, Manufacturing & Services. World Bank consultant rates: USD 450-700/day at your level.",message:`Subject: Consultant registration — manufacturing competitiveness, clean production, technology transfer\n\nI offer 11 years of process engineering with specializations in technology transfer, manufacturing optimization (Lean Six Sigma Black Belt), and environmental compliance (95% emission reduction). Available for short-term consultancies in Trade & Competitiveness and Environment programs.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"b3",name:"IFC Advisory Services",title:"Manufacturing Advisory & Clean Technology — Private Sector",company:"IFC (World Bank Group)",category:"mdb",priority:6,location:"Washington, DC",website:"https://www.ifc.org/",email:"",registrationUrl:"https://www.ifc.org/en/what-we-do/products-and-services/advisory-services",howToApproach:"IFC is the World Bank's private sector arm. Over 800 advisory projects in 100+ countries. They help companies with operational performance, sustainability, and clean technology adoption. Your Lean Six Sigma and process optimization background is highly relevant.",message:`Subject: Manufacturing advisory expert — Lean Six Sigma, clean technology, process optimization\n\nI bring 11 years of hands-on manufacturing optimization, Lean Six Sigma Black Belt, and a track record of measurable results (+30% capacity, -95% emissions, -75% alarm load). Available for IFC advisory assignments in manufacturing competitiveness and clean technology adoption.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"b4",name:"ADB Consultant Management System",title:"Infrastructure & Industrial Development — Asia-Pacific",company:"ADB",category:"mdb",priority:12,location:"Manila, Philippines",website:"https://www.adb.org/",email:"",registrationUrl:"http://cms.adb.org/",howToApproach:"Register on ADB's CMS (Consultant Management System). Your China experience and Chinese language are differentiators for Asia-Pacific assignments.",message:`Subject: Consultant registration — technology transfer, industrial development, process engineering\n\nSenior Process Engineer with 5 years of technology transfer experience between Europe and China, Chinese language capability (B1), and Lean Six Sigma Black Belt. Available for ADB industrial development consultancies.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"b5",name:"AfDB E-Consultant Database",title:"Industrial Development in Africa",company:"AfDB",category:"mdb",priority:13,location:"Abidjan, Ivory Coast",website:"https://www.afdb.org/",email:"consultants@afdb.org",registrationUrl:"https://www.afdb.org/en/projects-and-operations/procurement/consultancy-services-e-consultant",howToApproach:"Register on AfDB's E-Consultant database. Africa is Italy's priority development region (Mattei Plan). Your Italian nationality gives you access to AICS-funded projects across 23 African priority countries.",message:`Subject: Consultant registration — industrial development, technology transfer, clean production for Africa\n\nSenior Process Engineer with 11 years of manufacturing experience, cross-continental technology transfer (Italy↔China), and EU citizen. Italian nationality and AICS partnership potential. Available for AfDB industrial development consultancies.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  // === EU / BILATERAL ===
+  {id:"e1",name:"AICS — Italian Development Cooperation",title:"Agenzia Italiana per la Cooperazione allo Sviluppo — Industrial Development",company:"AICS",category:"eu",priority:7,location:"Rome / Florence, Italy",website:"https://www.aics.gov.it/?lang=en",email:"",registrationUrl:"https://www.aics.gov.it/",howToApproach:"AICS is Italy's development cooperation agency. 38 priority countries (23 in Africa). The Mattei Plan for Africa (€5.5B) creates huge opportunities for Italian experts. Monitor their project calls and register. Industrial development and private sector support are priority sectors.",message:`Subject: Esperto italiano — trasferimento tecnologico, sviluppo industriale, competitività manifatturiera\n\nGentili,\n\nSono un Senior Process Engineer con 11 anni di esperienza in ambienti manifatturieri complessi e 5 anni di trasferimento tecnologico intercontinentale (Italia-Cina). Desidero offrire la mia competenza per i programmi AICS di sviluppo industriale nei paesi prioritari.\n\nCompetenze chiave: trasferimento tecnologico, ottimizzazione di processo (Lean Six Sigma Black Belt), riduzione emissioni PFAS del 95%, gestione progetti cross-culturali (5 lingue), MSc Ingegneria Chimica Pisa (110/110 e lode).\n\nResto a disposizione.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com\n+39 347 803 1137`},
+
+  {id:"e2",name:"EU DG INTPA — Framework Contracts",title:"SEA 2023 Framework — Lots 1, 2, 5, 7 (Climate, Environment, STI, Trade)",company:"EU",category:"eu",priority:9,location:"Brussels, Belgium",website:"https://international-partnerships.ec.europa.eu/",email:"",registrationUrl:"https://international-partnerships.ec.europa.eu/funding-and-technical-assistance/looking-funding/framework-contracts/framework-contract-sea-2023_en",howToApproach:"You don't apply directly to the EU — you register with consortium firms that won the framework contracts (NIRAS, GFA, Ecorys, etc.). They search their expert databases when assignments arise. Register with as many firms as possible. See the Consulting Firms contacts in this CRM.",message:`Note: Register with consortium firms (NIRAS, GFA, Ecorys, Particip, NTU, DAI, Tetra Tech) to access EU framework contract assignments. See firm contacts below.`},
+
+  {id:"e3",name:"GIZ — German Development Cooperation",title:"Industrial Development, SME Promotion, Clean Technology",company:"GIZ",category:"eu",priority:11,location:"Bonn / Eschborn, Germany",website:"https://www.giz.de/en/html/index.html",email:"",registrationUrl:"https://www.giz.de/en/workingwithgiz/bidding_procurement.html",howToApproach:"GIZ is Germany's main technical cooperation agency. Strong in industrial development, SME promotion, clean technology. Monitor their tender portal. Your German language (A2) is a plus. Many GIZ projects in Africa and Central Asia.",message:`Subject: Expert profile — technology transfer, clean production, manufacturing competitiveness\n\nI offer 11 years of process engineering expertise with focus on technology transfer, clean production (95% PFAS emission reduction), and manufacturing competitiveness (Lean Six Sigma Black Belt). Available for GIZ technical cooperation assignments.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  // === CONSULTING FIRMS ===
+  {id:"f1",name:"NIRAS Expert Network",title:"Won 12 of 17 EU SEA 2023 Lots — Largest Framework Contractor",company:"NIRAS",category:"firm",priority:14,location:"Copenhagen, Denmark",website:"https://www.niras.com/",email:"",registrationUrl:"https://www.niras.com/",howToApproach:"NIRAS won 12 of 17 lots in the EU SEA 2023 framework — they're the dominant player. Register on their expert network via website. Send CV in Europass format emphasizing: technology transfer, environmental compliance, industrial development, 5 languages. They need experts for assignments across developing countries.",message:`Subject: Expert registration — technology transfer, clean production, industrial development\n\nDear NIRAS Expert Network,\n\nI wish to register as an individual expert for NIRAS framework contract assignments.\n\nProfile summary:\n- 11 years process engineering in complex manufacturing environments\n- 5 years cross-continental technology transfer (Italy↔China, Solvay)\n- 95% PFAS emission reduction — Stockholm Convention relevance\n- Lean Six Sigma Black Belt — manufacturing competitiveness\n- 5 languages: Italian (native), English (C2), Chinese (B1), French, German\n- MSc Chemical Engineering, University of Pisa (cum laude)\n- Currently: Senior Process Engineer, INEOS Inovyn (Seveso III)\n\nAvailable for short-term and medium-term assignments in: technology transfer, clean production, industrial development, manufacturing competitiveness, chemical safety.\n\nCV attached in Europass format.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"f2",name:"GFA Consulting Group",title:"EU Framework Contractor — Industrial Development, SMEs",company:"GFA Consulting",category:"firm",priority:15,location:"Hamburg, Germany",website:"https://www.gfa-group.de/",email:"",registrationUrl:"https://www.gfa-group.de/",howToApproach:"German firm, multiple EU framework contract lots. Register as expert via their website. German-speaking consultants have an advantage.",message:`Subject: Expert database registration — process engineering, technology transfer, clean production\n\nDear GFA Expert Database,\n\nSenior Process Engineer (11yr), technology transfer specialist (Italy↔China), Lean Six Sigma Black Belt. 5 languages. Available for EU framework contract assignments in industrial development and clean production.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"f3",name:"Ecorys Expert Database",title:"EU Framework Contractor — Economic Development, Trade",company:"Ecorys",category:"firm",priority:16,location:"Rotterdam, Netherlands",website:"https://www.ecorys.com/",email:"",registrationUrl:"https://www.ecorys.com/",howToApproach:"Dutch firm, multiple EU framework lots. Register as expert. Good for Trade & Competitiveness assignments.",message:`Subject: Expert registration — manufacturing competitiveness, technology transfer\n\nSenior Process Engineer with Lean Six Sigma Black Belt, cross-continental technology transfer, and 5 languages. Available for Ecorys framework contract assignments.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"f4",name:"Particip Expert Network",title:"EU Framework Contractor — Evaluation, Development",company:"Particip",category:"firm",priority:17,location:"Freiburg, Germany",website:"https://www.particip.de/",email:"",registrationUrl:"https://www.particip.de/",howToApproach:"German firm leading evaluation lots. Register on their expert network.",message:`Subject: Expert registration — industrial process engineering, technology transfer, environmental compliance\n\nAlessio Mencaroni — 11yr process engineering, tech transfer, Lean Six Sigma, 5 languages.\nalessio.mencaroni@icloud.com`},
+
+  {id:"f5",name:"NTU International",title:"EU Framework Contractor — Infrastructure, Energy, Industry",company:"NTU International",category:"firm",priority:18,location:"Vienna, Austria",website:"https://www.ntu.eu/",email:"",registrationUrl:"https://www.ntu.eu/",howToApproach:"Austrian firm, multiple EU lots. Good for infrastructure and energy assignments.",message:`Subject: Expert registration — process engineering, industrial energy efficiency\n\nAlessio Mencaroni — 11yr process engineering, energy efficiency, clean production.\nalessio.mencaroni@icloud.com`},
+
+  {id:"f6",name:"DAI Global Expert Roster",title:"5,200+ Employees, 150+ Countries — Environment, Economic Growth",company:"DAI Global",category:"firm",priority:19,location:"London / Washington DC",website:"https://www.dai.com/",email:"",registrationUrl:"https://www.dai.com/",howToApproach:"Major US/UK development implementer. 5,200+ staff. Register as expert for environment and economic growth assignments.",message:`Subject: Expert registration — clean production, manufacturing competitiveness, technology transfer\n\nAlessio Mencaroni — 11yr process engineering, Lean Six Sigma Black Belt, Italy↔China tech transfer, 5 languages.\nalessio.mencaroni@icloud.com`},
+
+  {id:"f7",name:"Tetra Tech International Development",title:"Global Engineering + Development — Environment, Energy",company:"Tetra Tech",category:"firm",priority:20,location:"London / Pasadena",website:"https://www.tetratech.com/",email:"",registrationUrl:"https://www.tetratech.com/",howToApproach:"Global engineering firm with strong development practice. Environment, energy, infrastructure. Your engineering background is a natural fit.",message:`Subject: Expert registration — process engineering, environmental compliance, industrial development\n\nAlessio Mencaroni — 11yr process engineering, 95% emission reduction, Lean Six Sigma.\nalessio.mencaroni@icloud.com`},
+
+  {id:"f8",name:"AIC Progetti S.p.A.",title:"Italian Engineering Consulting — EU/AICS Projects in Africa (since 1965)",company:"AIC Progetti",category:"firm",priority:21,location:"Rome, Italy",website:"",email:"",registrationUrl:"",howToApproach:"Italian firm founded 1965, specializing in engineering consulting for EU and Italian cooperation projects in Africa. Being Italian is a major advantage. Contact directly for expert registration.",message:`Subject: Registrazione esperto — ingegneria di processo, trasferimento tecnologico\n\nSono un Senior Process Engineer con 11 anni di esperienza, specializzato in trasferimento tecnologico e ottimizzazione di processo. Desidero registrarmi come esperto per i vostri progetti di cooperazione.\n\nAlessio Mencaroni\nalessio.mencaroni@icloud.com`},
+
+  {id:"f9",name:"Agriconsulting Europe S.A.",title:"Italian Firm — EU Framework Contracts, Agriculture & Environment",company:"Agriconsulting Europe",category:"firm",priority:22,location:"Rome, Italy",website:"",email:"",registrationUrl:"",howToApproach:"Italian firm active in EU framework contracts. Agriculture, environment sectors. Register as expert for environmental and industrial assignments.",message:`Subject: Expert registration — environmental compliance, clean production, process engineering\n\nAlessio Mencaroni — 11yr process engineering, 95% emission reduction, Lean Six Sigma.\nalessio.mencaroni@icloud.com`},
+
+  // === PLATFORMS ===
+  {id:"p1",name:"UNGM — UN Global Marketplace",title:"Central Procurement Portal — 500,000+ Registered Suppliers",company:"UNGM",category:"platform",priority:3,location:"Online",website:"https://www.ungm.org/",email:"register@un.org",registrationUrl:"https://www.ungm.org/",howToApproach:"PRIORITY 1 registration. Central procurement portal for the entire UN system. Create vendor profile with qualifications, experience, areas of expertise. Register under: industrial consulting, environmental engineering, technology transfer. Free. Levels: Basic → Level 1 → Level 2.",message:`Register at ungm.org — create vendor profile under:\n- Industrial consulting\n- Environmental engineering\n- Technology transfer\n- Process optimization\n- Chemical safety`},
+
+  {id:"p2",name:"DevEx Career Center",title:"The 'LinkedIn of Development' — 1.3M+ Professionals",company:"DevEx",category:"platform",priority:4,location:"Online",website:"https://www.devex.com/",email:"",registrationUrl:"https://www.devex.com/",howToApproach:"PRIORITY 1. Create a detailed profile highlighting your development-relevant skills. DevEx is where donors and firms search for experts. Free basic profile; Pro subscription gives full access to opportunities.",message:`Create profile at devex.com emphasizing:\n- Technology transfer to developing countries\n- Clean production / PFAS expertise\n- Manufacturing competitiveness (Lean Six Sigma)\n- 5 languages including Chinese\n- Available for short/medium-term consulting`},
+
+  {id:"p3",name:"DevelopmentAid",title:"Jobs, Tenders, Consultant Database",company:"DevelopmentAid",category:"platform",priority:5,location:"Online",website:"https://www.developmentaid.org/",email:"",registrationUrl:"https://www.developmentaid.org/",howToApproach:"Register to be found by consulting firms and donors. Paid membership gives access to shortlists and award information. Good for monitoring tenders and opportunities.",message:`Register at developmentaid.org — create expert profile.\nConsider paid membership for full access to tender alerts and shortlist information.`},
+
+  {id:"p4",name:"EU TED — Tenders Electronic Daily",title:"EU Public Procurement — 800,000+ Notices/Year",company:"EU",category:"platform",priority:9,location:"Online",website:"https://ted.europa.eu/",email:"",registrationUrl:"https://ted.europa.eu/",howToApproach:"Monitor for relevant technical assistance tenders. Set up alerts for keywords: technology transfer, clean production, industrial development, MSAT, process engineering. Free to use.",message:`Set up alerts at ted.europa.eu for:\n- Technology transfer\n- Clean production\n- Industrial development\n- Manufacturing competitiveness\n- Chemical safety`},
+
+  {id:"p5",name:"ReliefWeb Jobs",title:"UN OCHA Platform — Humanitarian & Development Jobs",company:"ReliefWeb",category:"platform",priority:15,location:"Online",website:"https://reliefweb.int/jobs",email:"",registrationUrl:"https://reliefweb.int/jobs",howToApproach:"Monitor for development consulting positions. Primarily humanitarian but also development sector. Free.",message:`Monitor reliefweb.int/jobs for relevant development consulting positions.`},
+
+  {id:"p6",name:"UNjobs",title:"Aggregates All UN System Vacancies",company:"UNjobs",category:"platform",priority:16,location:"Online",website:"https://unjobs.org/",email:"",registrationUrl:"https://unjobs.org/",howToApproach:"Free aggregator of all UN system vacancies including consultancies. Set up job alerts for UNIDO, UNEP, WHO consultancy positions.",message:`Set up alerts at unjobs.org for UNIDO, UNEP, WHO consultancy positions.`},
+
+  {id:"p7",name:"EBRD eSelection Platform",title:"EBRD Consultancy Assignment Platform",company:"EBRD",category:"platform",priority:10,location:"Online",website:"https://eselection.ebrd.com/",email:"",registrationUrl:"https://eselection.ebrd.com/",howToApproach:"Register on eSelection in addition to the Expert Registry. This is where specific consultancy assignments are posted.",message:`Register at eselection.ebrd.com for specific EBRD consultancy assignments.`}
+];
+
+// === CV VARIANTS ===
+const cvVariants = {
+  devcon: {
+    headline:"International Development Consultant — Industrial Development, Technology Transfer & Clean Production",
+    summary:[
+      'Senior Process Engineer with <strong>11 years of experience</strong> in complex manufacturing environments across <strong>Europe and Asia</strong>, offering specialized expertise in technology transfer, clean production, and manufacturing competitiveness for international development programs.',
+      'Proven track record in <strong>cross-continental technology transfer</strong> (Italy ↔ China, 5 years), <strong>industrial pollution reduction</strong> (95% PFAS emission elimination), and <strong>manufacturing process optimization</strong> (Lean Six Sigma Black Belt) — directly applicable to donor-funded technical assistance in developing countries.',
+      '<strong>5 languages</strong> (Italian, English, Chinese, French, German) and <strong>4 countries</strong> of working experience enable effective delivery of multi-stakeholder capacity-building programs across diverse cultural contexts.'
+    ],
+    competencies:[
+      'Technology transfer: cross-continental industrialization (Italy ↔ China, 5 years, multi-product)',
+      'Clean production: 95% PFAS/POPs emission reduction — Stockholm Convention relevance',
+      'Manufacturing competitiveness: Lean Six Sigma Black Belt, OEE, process optimization',
+      'Industrial pollution management: structured monitoring (4,000 samples/year), regulatory compliance',
+      'Process scale-up: lab/pilot to full-scale manufacturing across multiple product lines',
+      'Data-driven analysis: PI System, DCS, Python/MATLAB, Minitab — Industry 4.0 applicable',
+      'Multi-stakeholder coordination: 50-person cross-functional task force leadership',
+      'Capacity building: guest lecturer, Nottingham University Business School (5 years)',
+      'Environmental compliance: Seveso III regulated operations — transferable to GMP/EMS frameworks',
+      'Multilingual: Italian (native), English (C2), Chinese (B1), French (A2/B2), German (A2)'
+    ],
+    whyTitle:"Why I fit international development consulting",
+    whyText:'I spent five years transferring manufacturing processes between Italy and China — exactly the type of technology transfer that UNIDO and other donors promote globally. My 95% PFAS emission reduction is directly relevant to Stockholm Convention technical assistance. My Lean Six Sigma Black Belt drives manufacturing competitiveness improvements that World Bank and IFC programs target. Five languages including Chinese open doors across virtually all major donor markets. I have hands-on experience in the kind of cross-cultural, multi-stakeholder industrial work that development projects require.'
+  },
+  cleanprod: {
+    headline:"Clean Production & Environmental Compliance Expert — PFAS/POPs, Industrial Pollution Reduction",
+    summary:[
+      'Environmental process engineer with <strong>11 years of experience</strong> and a globally significant achievement: <strong>95% reduction in PFAS micropollutant emissions</strong> through process modifications and structured monitoring at a major European fluoropolymer production site.',
+      'Coordinated a <strong>50-person cross-functional task force</strong> addressing critical environmental compliance under severe regulatory scrutiny, managing <strong>4,000 environmental samples per year</strong> across R&D, HSE, Production, Engineering, and Analytical teams.',
+      'Deep expertise in <strong>Seveso III regulatory compliance</strong>, chemical safety, process risk analysis (HAZOP, MOC, LOPA), and pollution prevention — directly transferable to developing country environmental management programs and Stockholm Convention National Implementation Plans.'
+    ],
+    competencies:[
+      'PFAS/POPs emission reduction: 95% achieved through systematic process modifications',
+      'Environmental monitoring: 4,000 samples/year structured campaigns',
+      'Chemical safety: Seveso III, HAZOP, MOC, LOPA — regulatory compliance',
+      'Cross-functional coordination: 50-person task force across 6 departments',
+      'Clean production methodology: Lean Six Sigma Black Belt applied to environmental goals',
+      'Process data analytics for environmental monitoring: PI System, Python, Minitab',
+      'Fluoropolymer chemistry: PTFE, PVDF, FKM, FFKM — deep PFAS understanding',
+      'Technology transfer for pollution prevention: cross-site implementation',
+      'Stakeholder management under regulatory scrutiny',
+      'Multilingual delivery: Italian, English, Chinese, French, German'
+    ],
+    whyTitle:"Why I fit clean production consulting",
+    whyText:'My 95% PFAS emission reduction is a globally significant achievement that few consultants can match. The Stockholm Convention added PFOA and PFHxS, creating urgent demand for experts who can help developing countries manage these persistent pollutants. I understand PFAS chemistry at the molecular level (5 years with fluoropolymers) and have practical experience eliminating emissions at industrial scale. My structured monitoring approach (4,000 samples/year) and cross-functional coordination skills translate directly to technical assistance programs.'
+  },
+  techtransfer: {
+    headline:"Technology Transfer Specialist — Cross-Continental Industrialization & Capacity Building",
+    summary:[
+      'Technology transfer engineer with <strong>5 years of direct experience</strong> transferring complex manufacturing processes between <strong>Italy and China</strong> (Solvay Specialty Polymers), covering process design, scale-up, commissioning, and steady-state optimization.',
+      'Technical interface between <strong>R&D, Laboratory, and Operations</strong> during all transfer phases. Proven ability to bridge cultural, linguistic, and technical gaps in multi-site manufacturing environments.',
+      'Currently driving performance stabilization in <strong>Seveso III regulated manufacturing</strong> with formal IMS ownership and CAPEX management. <strong>5 languages and 4 countries</strong> of experience enable rapid deployment to international technology transfer programs.'
+    ],
+    competencies:[
+      'Cross-continental technology transfer: Italy ↔ China (5 years, multiple product lines)',
+      'Process industrialization: lab/pilot scale-up to full-scale manufacturing',
+      'Technical interface: R&D ↔ Laboratory ↔ Operations across cultures and languages',
+      'Commissioning & start-up troubleshooting in new/brownfield facilities',
+      'Process design: PFD/P&ID, equipment sizing, process modifications',
+      'Manufacturing performance & robustness in multi-site environments',
+      'Capacity building: guest lecturer at international university (5 years)',
+      'Data-driven process validation and optimization',
+      'Multi-stakeholder project management under regulatory constraints',
+      'International mobility: EU citizen, 5 languages, 4 countries of experience'
+    ],
+    whyTitle:"Why I fit technology transfer consulting",
+    whyText:'Technology transfer is what I have done for most of my career. Five years moving specialty polymer processes between Italy and China — from process design through commissioning to steady-state optimization. I was the technical bridge between R&D, laboratory, and production teams across two continents and two languages. This is exactly what UNIDO promotes and developing countries need. Add five languages, four countries of experience, and a guest lectureship in Innovation Management, and I can deliver capacity-building programs from day one.'
+  },
+  manufacturing: {
+    headline:"Manufacturing Competitiveness Expert — Lean Six Sigma, Process Optimization, SME Productivity",
+    summary:[
+      'Senior Process Engineer and <strong>Lean Six Sigma Black Belt</strong> with 11 years of measurable manufacturing improvements: <strong>+30% production capacity</strong>, <strong>-90% maintenance costs</strong>, <strong>-75% alarm load</strong>, <strong>-95% emissions</strong>.',
+      'Experienced in applying structured problem-solving and data-driven methodologies to complex manufacturing challenges in <strong>continuous process industries</strong>, with direct applicability to SME productivity improvement programs in developing countries.',
+      'Combination of hands-on operational experience, advanced analytics (PI System, Python, Minitab), and international project management makes this profile ideal for <strong>World Bank, IFC, and EBRD manufacturing competitiveness</strong> programs.'
+    ],
+    competencies:[
+      'Lean Six Sigma Black Belt: DMAIC, SPC, statistical process control',
+      'Production capacity optimization: +30% through bottleneck analysis',
+      'Maintenance reduction: -90% through root-cause elimination',
+      'Alarm management: -75% through systematic data analysis',
+      'Process data analytics: PI System, DCS, Python/MATLAB, Minitab',
+      'OEE improvement and continuous improvement methodologies',
+      'CAPEX justification: techno-economic analysis through execution',
+      'Cross-functional coordination across Operations, Engineering, Quality, Lab',
+      'Technology transfer as performance improvement methodology',
+      'Multilingual: Italian, English, Chinese, French, German'
+    ],
+    whyTitle:"Why I fit manufacturing competitiveness consulting",
+    whyText:'I deliver measurable manufacturing improvements — not theoretical advice. +30% capacity, -90% maintenance, -75% alarms, -95% emissions. Every number is from real projects. Lean Six Sigma gives me the methodology; PI System, Python, and Minitab give me the tools; 11 years on plant floors give me the credibility. SMEs in developing countries need practical, implementable process improvements, and that is exactly what I have been doing across four countries.'
+  },
+  italiano: {
+    headline:"Consulente Internazionale — Sviluppo Industriale, Trasferimento Tecnologico & Produzione Pulita",
+    summary:[
+      'Senior Process Engineer con <strong>11 anni di esperienza</strong> in ambienti manifatturieri complessi tra <strong>Europa e Asia</strong>, con competenze specialistiche in trasferimento tecnologico, produzione pulita e competitività manifatturiera per programmi di cooperazione internazionale allo sviluppo.',
+      'Track record comprovato nel <strong>trasferimento tecnologico intercontinentale</strong> (Italia ↔ Cina, 5 anni), <strong>riduzione dell\'inquinamento industriale</strong> (riduzione emissioni PFAS del 95%), e <strong>ottimizzazione dei processi manifatturieri</strong> (Lean Six Sigma Black Belt).',
+      '<strong>5 lingue</strong> (italiano, inglese, cinese, francese, tedesco) e <strong>4 paesi</strong> di esperienza lavorativa per la gestione efficace di programmi di capacity building in contesti multiculturali.'
+    ],
+    competencies:[
+      'Trasferimento tecnologico intercontinentale (Italia ↔ Cina, 5 anni, multi-prodotto)',
+      'Produzione pulita: riduzione 95% emissioni PFAS/POPs — rilevanza Convenzione di Stoccolma',
+      'Competitività manifatturiera: Lean Six Sigma Black Belt, OEE, ottimizzazione di processo',
+      'Gestione inquinamento industriale: monitoraggio strutturato (4.000 campioni/anno)',
+      'Scale-up di processo: da laboratorio/pilota a scala industriale',
+      'Analisi dati di processo: PI System, DCS, Python/MATLAB, Minitab',
+      'Coordinamento multistakeholder: task force cross-funzionale di 50 persone',
+      'Capacity building: docente ospite, Nottingham University Business School (5 anni)',
+      'Compliance ambientale: operazioni regolamentate Seveso III',
+      'Multilingue: italiano (madrelingua), inglese (C2), cinese (B1), francese, tedesco'
+    ],
+    whyTitle:"Perché sono adatto alla consulenza per lo sviluppo",
+    whyText:'Ho trascorso cinque anni trasferendo processi manifatturieri tra Italia e Cina — esattamente il tipo di trasferimento tecnologico promosso da UNIDO e altre organizzazioni internazionali. La riduzione del 95% delle emissioni PFAS è direttamente rilevante per l\'assistenza tecnica della Convenzione di Stoccolma. Il Lean Six Sigma Black Belt guida i miglioramenti di competitività manifatturiera che i programmi della Banca Mondiale e dell\'IFC perseguono. Cinque lingue, incluso il cinese, aprono le porte in tutti i principali mercati dei donatori.'
+  }
+};
+
+const cvShared = {
+  achievements:`<h2 style="font-size:14px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1.2px;margin:24px 0 10px 0;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">Key Achievements</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;">
+    <div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:20px;font-weight:800;color:#7c3aed;min-width:48px;">95%</span><span>PFAS emission reduction — 50-person cross-functional task force</span></div>
+    <div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:20px;font-weight:800;color:#7c3aed;min-width:48px;">30%</span><span>Production capacity increase via bottleneck analysis</span></div>
+    <div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:20px;font-weight:800;color:#7c3aed;min-width:48px;">90%</span><span>Maintenance reduction through root-cause elimination</span></div>
+    <div style="display:flex;align-items:baseline;gap:8px;"><span style="font-size:20px;font-weight:800;color:#7c3aed;min-width:48px;">75%</span><span>Alarm load reduction improving control-room effectiveness</span></div>
+  </div>`,
+  experience:`<h2 style="font-size:14px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1.2px;margin:24px 0 10px 0;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">Professional Experience</h2>
+  <div style="margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;"><div><strong style="font-size:14px;">Senior Process Engineer</strong> — <span style="color:#4a5568;">INEOS Inovyn</span></div><span style="font-size:12px;color:#718096;">2024 – Present · Rosignano, Italy</span></div>
+    <p style="margin:4px 0 6px 0;color:#4a5568;font-size:12.5px;">Italy's largest chlor-alkali electrolysis unit — 150,000 t/y. Seveso III regulated.</p>
+    <ul style="margin:0;padding-left:18px;">
+      <li>Performance stabilization and risk-based decisions in compliance-driven continuous manufacturing</li>
+      <li>Formal IMS ownership at production unit level</li>
+      <li>CAPEX initiatives: techno-economic justification through commissioning</li>
+      <li>HAZOP reviews and risk mitigation actions (MOC, process modifications)</li>
+      <li><strong>Impact:</strong> +30% capacity, -90% maintenance, -75% alarm load</li>
+    </ul>
+  </div>
+  <div style="margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;"><div><strong style="font-size:14px;">Process Technology Engineer</strong> — <span style="color:#4a5568;">Solvay Specialty Polymers</span></div><span style="font-size:12px;color:#718096;">2018 – 2023 · Italy & China</span></div>
+    <p style="margin:4px 0 6px 0;color:#4a5568;font-size:12.5px;">Cross-continental technology transfer of fluoropolymers (PTFE, PVDF, FKM, FFKM).</p>
+    <ul style="margin:0;padding-left:18px;">
+      <li><strong>Cross-continental technology transfer</strong> between Italian and Chinese production sites</li>
+      <li>Process design, scale-up and optimization from lab/pilot to full-scale</li>
+      <li>Technical interface: R&D ↔ Laboratory ↔ Operations</li>
+    </ul>
+    <div style="margin-top:8px;padding:8px 12px;background:#f7fafc;border-left:3px solid #7c3aed;border-radius:0 6px 6px 0;">
+      <strong style="font-size:13px;">PFAS Emission Reduction Task Force</strong> <span style="font-size:12px;color:#718096;">2020–2022</span>
+      <ul style="margin:4px 0 0 0;padding-left:18px;font-size:13px;">
+        <li>Coordinated <strong>50-person cross-functional team</strong> — achieved <strong>95% emission reduction</strong></li>
+        <li>4,000 samples/year structured monitoring across 6 departments</li>
+      </ul>
+    </div>
+  </div>
+  <div style="margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;"><div><strong style="font-size:14px;">Project Engineer</strong> — <span style="color:#4a5568;">Icap-Sira Chemicals</span></div><span style="font-size:12px;color:#718096;">2016–2018 · Florence</span></div>
+    <ul style="margin:4px 0 0 0;padding-left:18px;"><li>Process troubleshooting, efficiency and environmental sustainability improvements</li></ul>
+  </div>
+  <div style="margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;"><div><strong style="font-size:14px;">Process Engineer</strong> — <span style="color:#4a5568;">Turboden (Mitsubishi Heavy Industries)</span></div><span style="font-size:12px;color:#718096;">2015–2016 · Brescia</span></div>
+    <ul style="margin:4px 0 0 0;padding-left:18px;"><li>Process design for ORC turbomachinery systems</li></ul>
+  </div>`,
+  bottom:`<h2 style="font-size:14px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1.2px;margin:24px 0 10px 0;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">Education</h2>
+  <div style="margin-bottom:6px;"><strong>MSc Chemical Engineering</strong> — University of Pisa <span style="background:#7c3aed;color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;margin-left:8px;font-weight:700;">110/110 cum laude</span> <span style="font-size:12px;color:#718096;">2012–2015</span></div>
+  <div><strong>BSc Chemical Engineering</strong> — University of Pisa <span style="font-size:12px;color:#718096;margin-left:8px;">105/110 · 2009–2012</span></div>
+  <h2 style="font-size:14px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1.2px;margin:24px 0 10px 0;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">Certifications</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:13px;">
+    <div><strong>Lean Six Sigma Black Belt</strong> — SSGI</div>
+    <div><strong>Lean Six Sigma Green Belt</strong> — INEOS Inovyn</div>
+    <div><strong>Corporate Finance</strong> — Rice University</div>
+    <div><strong>AI & Data Analysis</strong> — DeepLearning.ai</div>
+  </div>
+  <h2 style="font-size:14px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1.2px;margin:24px 0 10px 0;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">Additional</h2>
+  <div style="margin-bottom:6px;"><strong>Guest Lecturer</strong> — Nottingham University Business School, Ningbo, China <span style="font-size:12px;color:#718096;">2019–2023</span></div>
+  <div style="margin-bottom:4px;"><strong>Nova Talent Network</strong> — Member</div>
+  <div><strong>Publication:</strong> <span style="font-size:12.5px;color:#4a5568;">Landucci, Pupillo, <strong>Mencaroni</strong>, Pannocchia (2018). Quantitative consequence assessment of industrial accidents. Chemical Engineering Transactions, 67, 139–144.</span></div>
+  <h2 style="font-size:14px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1.2px;margin:24px 0 10px 0;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">Technical Tools</h2>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+    <span style="background:#f3e8ff;color:#7c3aed;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;">PI System</span>
+    <span style="background:#f3e8ff;color:#7c3aed;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;">DCS (ABB, Yokogawa, DeltaV)</span>
+    <span style="background:#f3e8ff;color:#7c3aed;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;">Python / MATLAB</span>
+    <span style="background:#f3e8ff;color:#7c3aed;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;">Minitab</span>
+    <span style="background:#f3e8ff;color:#7c3aed;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;">Aspen HYSYS</span>
+    <span style="background:#f3e8ff;color:#7c3aed;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;">SAP</span>
+    <span style="background:#f3e8ff;color:#7c3aed;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;">AutoCAD</span>
+  </div>
+  <h2 style="font-size:14px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1.2px;margin:24px 0 10px 0;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">Languages</h2>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;">
+    <div style="text-align:center;min-width:80px;"><div style="font-size:13px;font-weight:700;">Italian</div><div style="font-size:11px;color:#718096;">Native</div><div style="background:#7c3aed;height:4px;border-radius:2px;margin-top:4px;"></div></div>
+    <div style="text-align:center;min-width:80px;"><div style="font-size:13px;font-weight:700;">English</div><div style="font-size:11px;color:#718096;">C2</div><div style="background:#7c3aed;height:4px;border-radius:2px;margin-top:4px;width:92%;"></div></div>
+    <div style="text-align:center;min-width:80px;"><div style="font-size:13px;font-weight:700;">Chinese</div><div style="font-size:11px;color:#718096;">B1</div><div style="background:#7c3aed;height:4px;border-radius:2px;margin-top:4px;width:55%;"></div></div>
+    <div style="text-align:center;min-width:80px;"><div style="font-size:13px;font-weight:700;">French</div><div style="font-size:11px;color:#718096;">A2/B2</div><div style="background:#7c3aed;height:4px;border-radius:2px;margin-top:4px;width:40%;"></div></div>
+    <div style="text-align:center;min-width:80px;"><div style="font-size:13px;font-weight:700;">German</div><div style="font-size:11px;color:#718096;">A2</div><div style="background:#7c3aed;height:4px;border-radius:2px;margin-top:4px;width:25%;"></div></div>
+  </div>`
+};
+
+function buildCV(v){
+  const d=cvVariants[v];const loc=v==='italiano'?'Pisa, Italia':'Pisa, Italy';
+  const mobil=v==='italiano'?'Cittadino UE · Disponibile per missioni internazionali':'EU Citizen · Available for international assignments · 5 languages';
+  let html=`<div style="text-align:center;margin-bottom:8px;">
+    <h1 style="font-size:26px;font-weight:700;color:#1a1a2e;margin:0 0 4px 0;">ALESSIO MENCARONI</h1>
+    <p style="font-size:15px;color:#4a5568;margin:0 0 12px 0;font-weight:500;">${d.headline}</p>
+    <div style="font-size:12px;color:#718096;display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
+      <span>${loc}</span><span>+39 347 803 1137</span><span>alessio.mencaroni@icloud.com</span>
+      <a href="https://linkedin.com/in/alessiomencaroni" target="_blank" style="color:#7c3aed;text-decoration:none;">linkedin.com/in/alessiomencaroni</a>
+    </div>
+    <p style="font-size:11.5px;color:#7c3aed;margin:6px 0 0 0;font-weight:500;">${mobil}</p>
+  </div><hr style="border:none;border-top:2px solid #7c3aed;margin:16px 0;">`;
+  html+=`<h2 style="font-size:14px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1.2px;margin:20px 0 10px 0;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">${v==='italiano'?'Profilo Professionale':'Executive Summary'}</h2>`;
+  d.summary.forEach(p=>html+=`<p style="margin:0 0 6px 0;">${p}</p>`);
+  html+=cvShared.achievements;
+  html+=`<h2 style="font-size:14px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1.2px;margin:24px 0 10px 0;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">${v==='italiano'?'Competenze Chiave':'Core Competencies'}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:13px;">`;
+  d.competencies.forEach(c=>html+=`<div style="display:flex;align-items:center;gap:6px;"><span style="color:#7c3aed;font-weight:700;">▶</span> ${c}</div>`);
+  html+=`</div>`;
+  html+=cvShared.experience+cvShared.bottom;
+  html+=`<div style="margin-top:24px;padding:16px 20px;background:linear-gradient(135deg,#f3e8ff 0%,#f0fdf4 100%);border-radius:10px;border:1px solid #c4b5fd;">
+    <h3 style="font-size:13px;font-weight:700;color:#5b21b6;margin:0 0 8px 0;">${d.whyTitle}</h3>
+    <p style="margin:0;font-size:12.5px;line-height:1.65;color:#334155;">${d.whyText}</p>
+  </div>`;
+  return html;
+}
+function switchCVVariant(v){document.getElementById('cv-dynamic').innerHTML=buildCV(v);}
+
+const cvPrintCSS=`@page{margin:14mm 12mm;}body{font-family:"Segoe UI",system-ui,sans-serif;line-height:1.55;font-size:13.5px;color:#1a1a2e;margin:0;padding:0;}a{color:#7c3aed;text-decoration:none;}`;
+function downloadPDF(){const v=document.getElementById('cv-variant-select').value;const w=window.open('','_blank');w.document.write('<html><head><title>CV Consulting - Alessio Mencaroni</title><style>'+cvPrintCSS+'</style></head><body>'+buildCV(v)+'</body></html>');w.document.close();setTimeout(()=>w.print(),400);}
+function downloadWord(){const v=document.getElementById('cv-variant-select').value;const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>@page{size:A4;margin:16mm 14mm;}body{font-family:"Segoe UI",Calibri,sans-serif;line-height:1.55;font-size:13.5px;color:#1a1a2e;}</style></head><body>${buildCV(v)}</body></html>`;const blob=new Blob([html],{type:'application/msword'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='CV_Consulting_Alessio_Mencaroni_'+v+'.doc';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+
+// === EOI GENERATOR ===
+function populateCLContacts(){
+  const sel=document.getElementById('cl-contact-select');
+  if(!sel||sel.options.length>1)return;
+  const cats={un:'UN Agencies',mdb:'Development Banks',eu:'EU / Bilateral',firm:'Consulting Firms'};
+  Object.entries(cats).forEach(([cat,label])=>{
+    const grp=document.createElement('optgroup');grp.label=label;
+    contacts.filter(c=>c.category===cat).forEach(c=>{const opt=document.createElement('option');opt.value=c.id;opt.textContent=c.name+' — '+c.company;grp.appendChild(opt);});
+    sel.appendChild(grp);
+  });
+}
+
+const eoiFields = {
+  devcon: {thematic:'Industrial Development, Technology Transfer & Clean Production', sectors:'Manufacturing process optimization, technology transfer, clean production, industrial pollution management, capacity building'},
+  cleanprod: {thematic:'Environmental Compliance, Chemical Safety & Pollution Reduction (PFAS/POPs)', sectors:'Industrial emission reduction, Stockholm Convention implementation, environmental monitoring, clean production methodology'},
+  techtransfer: {thematic:'Technology Transfer & Process Industrialization', sectors:'Cross-site technology transfer, process scale-up, commissioning & start-up, capacity building, manufacturing implementation'},
+  manufacturing: {thematic:'Manufacturing Competitiveness & SME Productivity', sectors:'Lean manufacturing, process optimization, data-driven performance improvement, industrial energy efficiency, OEE improvement'},
+  italiano: {thematic:'Sviluppo Industriale, Trasferimento Tecnologico & Produzione Pulita', sectors:'Ottimizzazione processi manifatturieri, trasferimento tecnologico, produzione pulita, gestione inquinamento industriale'}
+};
+
+function generateEOI(){
+  const cid=document.getElementById('cl-contact-select').value;
+  const out=document.getElementById('cl-output');
+  if(!cid){out.textContent='Select an organization above to generate an Expression of Interest.';return;}
+  const c=contacts.find(x=>x.id===cid);if(!c)return;
+  const v=document.getElementById('cv-variant-select').value;
+  const ef=eoiFields[v];
+  const today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const isIT=v==='italiano';
+
+  const eoi=isIT?`ESPRESSIONE DI INTERESSE — REGISTRAZIONE CONSULENTE
+
+Data: ${today}
+Organizzazione: ${c.company}
+Riferimento: ${c.name}
+
+1. DATI DEL CONSULENTE
+Nome: Alessio Mencaroni
+Nazionalità: Italiana (Cittadino UE)
+Residenza: Pisa, Italia
+Contatto: +39 347 803 1137 | alessio.mencaroni@icloud.com
+LinkedIn: linkedin.com/in/alessiomencaroni
+
+2. AREA TEMATICA
+${ef.thematic}
+
+3. SETTORI DI COMPETENZA
+${ef.sectors}
+
+4. SINTESI DELLE QUALIFICHE
+- Laurea Magistrale in Ingegneria Chimica, Università di Pisa (110/110 e lode)
+- 11 anni di esperienza in ambienti manifatturieri complessi (Europa e Asia)
+- 5 anni di trasferimento tecnologico intercontinentale (Italia ↔ Cina)
+- Lean Six Sigma Black Belt (SSGI)
+- Riduzione emissioni PFAS del 95% — coordinamento task force 50 persone
+- Lingue: Italiano (madrelingua), Inglese (C2), Cinese (B1), Francese, Tedesco
+
+5. ESPERIENZA RILEVANTE
+• INEOS Inovyn (2024–presente): Senior Process Engineer, stabilizzazione performance, +30% capacità
+• Solvay Specialty Polymers (2018–2023): Trasferimento tecnologico Italia↔Cina, scale-up, task force PFAS
+• Icap-Sira Chemicals (2016–2018): Project Engineer, troubleshooting processi
+• Turboden / Mitsubishi (2015–2016): Process Engineer, progettazione ORC
+
+6. DISPONIBILITÀ
+Disponibile per missioni a breve e medio termine. Cittadino UE, mobilità internazionale.
+
+CV allegato.
+
+Alessio Mencaroni`
+
+:`EXPRESSION OF INTEREST — CONSULTANT REGISTRATION
+
+Date: ${today}
+Organization: ${c.company}
+Reference: ${c.name}
+
+1. CONSULTANT DETAILS
+Name: Alessio Mencaroni
+Nationality: Italian (EU Citizen)
+Base: Pisa, Italy
+Contact: +39 347 803 1137 | alessio.mencaroni@icloud.com
+LinkedIn: linkedin.com/in/alessiomencaroni
+
+2. THEMATIC AREA
+${ef.thematic}
+
+3. SECTORS OF EXPERTISE
+${ef.sectors}
+
+4. SUMMARY OF QUALIFICATIONS
+- MSc Chemical Engineering, University of Pisa (110/110 cum laude)
+- 11 years of experience in complex manufacturing environments (Europe & Asia)
+- 5 years of cross-continental technology transfer (Italy ↔ China, Solvay)
+- Lean Six Sigma Black Belt (SSGI)
+- 95% PFAS emission reduction — coordinated 50-person cross-functional task force
+- Languages: Italian (native), English (C2), Chinese Mandarin (B1), French, German
+
+5. RELEVANT EXPERIENCE
+• INEOS Inovyn (2024–present): Senior Process Engineer — performance stabilization, +30% capacity, -75% alarm load, IMS ownership, HAZOP, CAPEX management. Seveso III regulated.
+• Solvay Specialty Polymers (2018–2023): Process Technology Engineer — cross-continental technology transfer of fluoropolymers (PTFE, PVDF, FKM, FFKM) between Italy and China. Scale-up from lab/pilot to full-scale. PFAS task force coordinator: 95% emission reduction, 4,000 samples/year.
+• Icap-Sira Chemicals (2016–2018): Project Engineer — process troubleshooting, efficiency improvements.
+• Turboden / Mitsubishi Heavy Industries (2015–2016): Process Engineer — ORC system design.
+• Guest Lecturer, Nottingham University Business School, China (2019–2023)
+
+6. KEY ACHIEVEMENTS
+- 95% PFAS micropollutant emission reduction (Stockholm Convention relevance)
+- 30% production capacity increase through data-driven bottleneck analysis
+- 90% maintenance reduction on critical systems via root-cause elimination
+- 75% alarm load reduction improving operational effectiveness
+- Published: Quantitative consequence assessment using dynamic process simulators (2018)
+
+7. AVAILABILITY
+Available for short-term and medium-term assignments. EU citizen, internationally mobile. Open to assignments in all regions.
+
+CV attached.
+
+Alessio Mencaroni`;
+
+  out.textContent=eoi;
+}
+
+function copyEOI(){const t=document.getElementById('cl-output').textContent;if(t.startsWith('Select'))return;navigator.clipboard.writeText(t);const b=event.target;b.textContent='Copied!';setTimeout(()=>b.textContent='Copy',1500);}
+function downloadEOIWord(){const t=document.getElementById('cl-output').textContent;if(t.startsWith('Select'))return;const cid=document.getElementById('cl-contact-select').value;const c=contacts.find(x=>x.id===cid);const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>@page{size:A4;margin:20mm 18mm;}body{font-family:"Segoe UI",Calibri,sans-serif;line-height:1.7;font-size:13px;color:#1a1a2e;white-space:pre-wrap;}</style></head><body>${t}</body></html>`;const blob=new Blob([html],{type:'application/msword'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='EOI_'+c.company.replace(/[^a-zA-Z0-9]/g,'_')+'.doc';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+
+// === STATE MANAGEMENT ===
+let state={};
+function loadState(){try{state=JSON.parse(localStorage.getItem('alessio_consult_state')||'{}');}catch(e){state={};}contacts.forEach(c=>{if(!state[c.id])state[c.id]={status:'Not Registered',notes:'',message:c.message};});}
+function saveState(){localStorage.setItem('alessio_consult_state',JSON.stringify(state));const ind=document.getElementById('save-indicator');ind.classList.add('show');setTimeout(()=>ind.classList.remove('show'),1500);}
+function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='alessio_consulting_crm_backup.json';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
+function importData(e){const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=function(ev){try{state=JSON.parse(ev.target.result);contacts.forEach(c=>{if(!state[c.id])state[c.id]={status:'Not Registered',notes:'',message:c.message};});saveState();renderContacts();updateStats();alert('Imported successfully!');}catch(err){alert('Invalid file.');}};r.readAsText(file);}
+
+// === FILTERS ===
+let activeFilters=new Set();
+function toggleFilter(btn){const f=btn.dataset.filter;if(activeFilters.has(f)){activeFilters.delete(f);btn.classList.remove('active');}else{activeFilters.add(f);btn.classList.add('active');}renderContacts();}
+function passesFilter(c){
+  const search=document.querySelector('.search-input').value.toLowerCase();
+  if(search&&!c.name.toLowerCase().includes(search)&&!c.company.toLowerCase().includes(search)&&!c.title.toLowerCase().includes(search))return false;
+  const catF=[...activeFilters].filter(f=>f.startsWith('cat-'));
+  const statF=[...activeFilters].filter(f=>f.startsWith('status-'));
+  if(catF.length>0&&!catF.some(f=>f==='cat-'+c.category))return false;
+  if(statF.includes('status-pending')){const s=(state[c.id]&&state[c.id].status)||'Not Registered';if(s!=='Not Registered')return false;}
+  return true;
+}
+
+// === RENDERING ===
+const catOrder=['un','mdb','eu','firm','platform'];
+const catNames={un:'UN Agencies',mdb:'Multilateral Development Banks',eu:'EU & Bilateral Agencies',firm:'Consulting Firms',platform:'Platforms & Databases'};
+const catColors={un:'#3b82f6',mdb:'#8b5cf6',eu:'#06b6d4',firm:'#f59e0b',platform:'#10b981'};
+const regStatuses=['Not Registered','Profile Created','Application Sent','Registered','Shortlisted','Active Engagement'];
+const regClasses={'Not Registered':'not-registered','Profile Created':'profile-created','Application Sent':'application-sent','Registered':'registered','Shortlisted':'shortlisted','Active Engagement':'active-engagement'};
+
+function renderContacts(){
+  const container=document.getElementById('contacts-container');container.innerHTML='';
+  const filtered=contacts.filter(passesFilter);
+  catOrder.forEach(cat=>{
+    const group=filtered.filter(c=>c.category===cat);
+    if(group.length===0)return;
+    group.sort((a,b)=>a.priority-b.priority);
+    const header=document.createElement('div');header.className='cat-group-header';
+    header.innerHTML=`<span class="cat-dot" style="background:${catColors[cat]}"></span> ${catNames[cat]} <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(${group.length})</span>`;
+    container.appendChild(header);
+    group.forEach(c=>{
+      const s=state[c.id]||{};const card=document.createElement('div');card.className='contact-card';
+      const statusClass=regClasses[s.status||'Not Registered'];
+      const priorityClass=c.priority<=10?'top':'';
+      card.innerHTML=`
+        <div class="contact-main" data-mobile-info="${c.company} · ${c.location} · ${s.status||'Not Registered'}" onclick="toggleExpand('${c.id}')">
+          <div class="priority-badge ${priorityClass}" data-tooltip="Priority #${c.priority}">${c.priority}</div>
+          <div class="contact-info"><h3>${c.name}</h3><p>${c.title}</p></div>
+          <div class="company-col">${c.website?`<a href="${c.website}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:12px;" onclick="event.stopPropagation()">${c.company}</a>`:c.company}</div>
+          <div><span class="cat-badge ${c.category}">${c.category.toUpperCase()}</span></div>
+          <div class="location-col">${c.location}</div>
+          <div><select class="reg-select ${statusClass}" onchange="updateStatus('${c.id}',this.value);event.stopPropagation();" onclick="event.stopPropagation();">
+            ${regStatuses.map(st=>`<option value="${st}" ${(s.status||'Not Registered')===st?'selected':''}>${st}</option>`).join('')}
+          </select></div>
+          <div><button class="expand-btn" id="btn-${c.id}">&#9660;</button></div>
+        </div>
+        <div class="contact-expanded" id="exp-${c.id}">
+          <div class="expanded-grid">
+            <div class="expanded-section">
+              <h4>How to Approach</h4>
+              <div class="comm-tip">${c.howToApproach}</div>
+              ${c.registrationUrl?`<h4 style="margin-top:12px;">Registration Link</h4><div class="comm-tip"><a href="${c.registrationUrl}" target="_blank" style="color:var(--accent);">${c.registrationUrl}</a></div>`:''}
+              <h4 style="margin-top:12px;">Application Message (editable)</h4>
+              <textarea onchange="updateMessage('${c.id}',this.value)">${(s.message||c.message).replace(/</g,'&lt;')}</textarea>
+            </div>
+            <div class="expanded-section">
+              <h4>Notes</h4>
+              <textarea class="notes-area" style="min-height:100px;" placeholder="Track registration progress, contact names, deadlines..." onchange="updateNotes('${c.id}',this.value)">${(s.notes||'').replace(/</g,'&lt;')}</textarea>
+              <div class="date-row"><label>Last action:</label><input type="date" value="${s.lastAction||''}" onchange="updateDate('${c.id}',this.value)"></div>
+              <h4 style="margin-top:12px;">Details</h4>
+              <div class="comm-tip">
+                <strong>Organization:</strong> ${c.company}<br>
+                ${c.email?`<strong>Email:</strong> <a href="mailto:${c.email}" style="color:var(--accent);">${c.email}</a><br>`:''}
+                <strong>Location:</strong> ${c.location}<br>
+                <strong>Category:</strong> ${catNames[c.category]}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      container.appendChild(card);
+    });
+  });
+  updateStats();
+}
+
+function toggleExpand(id){document.getElementById('exp-'+id).classList.toggle('open');document.getElementById('btn-'+id).classList.toggle('open');}
+function updateStatus(id,val){state[id].status=val;if(!state[id].lastAction)state[id].lastAction=new Date().toISOString().slice(0,10);saveState();renderContacts();}
+function updateNotes(id,val){state[id].notes=val;saveState();}
+function updateMessage(id,val){state[id].message=val;saveState();}
+function updateDate(id,val){state[id].lastAction=val;saveState();}
+
+function updateStats(){
+  const bar=document.getElementById('stats-bar');
+  const total=contacts.length;
+  const registered=contacts.filter(c=>state[c.id]&&['Registered','Shortlisted','Active Engagement'].includes(state[c.id].status)).length;
+  const inProgress=contacts.filter(c=>state[c.id]&&['Profile Created','Application Sent'].includes(state[c.id].status)).length;
+  const active=contacts.filter(c=>state[c.id]&&state[c.id].status==='Active Engagement').length;
+  const pending=total-registered-inProgress-active;
+  bar.innerHTML=`
+    <div class="stat-card" data-tooltip="Total organizations to register with"><div class="num">${total}</div><div class="label">Total</div></div>
+    <div class="stat-card" data-tooltip="Not yet started registration"><div class="num" style="color:var(--text-muted)">${pending}</div><div class="label">Pending</div></div>
+    <div class="stat-card" data-tooltip="Profile created or application sent"><div class="num" style="color:var(--warning)">${inProgress}</div><div class="label">In Progress</div></div>
+    <div class="stat-card" data-tooltip="Successfully registered on roster/database"><div class="num" style="color:var(--success)">${registered}</div><div class="label">Registered</div></div>
+    <div class="stat-card" data-tooltip="Active consulting engagements"><div class="num" style="color:var(--purple)">${active}</div><div class="label">Active</div></div>
+  `;
+}
+
+// === INIT ===
+loadState();
+</script>
+<div style="text-align:center;padding:24px 16px 16px;font-size:9px;color:var(--text-muted);opacity:0.6;letter-spacing:0.3px;">this project is made with love — Alessio, i believe in you</div>
+</body>
+</html>
